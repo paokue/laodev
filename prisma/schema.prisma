@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  DEVELOPER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum DeveloperStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  email             String          @unique
+  name              String
+  password          String
+  role              Role            @default(USER)
+  avatar            String?
+  bio               String?
+  emailVerified     Boolean         @default(false)
+  otpCode           String?
+  otpExpiry         DateTime?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  developer      Developer?
+  posts          Post[]
+  articles       Article[]
+  bookingsAsUser Booking[]       @relation("UserBookings")
+  sentMessages   Message[]       @relation("SentMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  reviews        Review[]        @relation("ReviewAuthor")
+
+  @@map("users")
+}
+
+model Developer {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String          @unique @db.ObjectId
+  user           User            @relation(fields: [userId], references: [id])
+  title          String
+  specialties    String[]
+  skills         String[]
+  hourlyRate     Float
+  experience     Int
+  location       String?
+  languages      String[]
+  availability   String?
+  status         DeveloperStatus @default(PENDING)
+  rating         Float           @default(0)
+  reviewCount    Int             @default(0)
+  totalEarnings  Float           @default(0)
+  completedJobs  Int             @default(0)
+  education      Education[]
+  certifications String[]
+  portfolio      String[]
+  bookings       Booking[]       @relation("DeveloperBookings")
+  reviews        Review[]        @relation("DeveloperReviews")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("developers")
+}
+
+model Education {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  developerId String    @db.ObjectId
+  developer   Developer @relation(fields: [developerId], references: [id])
+  school      String
+  degree      String
+  field       String
+  year        Int
+
+  @@map("education")
+}
+
+model Post {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorId  String   @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  title     String
+  content   String
+  type      String   @default("project")
+  budget    String?
+  tags      String[]
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  comments  Comment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("posts")
+}
+
+model Comment {
+  id         String        @id @default(auto()) @map("_id") @db.ObjectId
+  postId     String        @db.ObjectId
+  post       Post          @relation(fields: [postId], references: [id])
+  authorId   String        @db.ObjectId
+  authorName String
+  content    String
+  likes      Int           @default(0)
+  parentId   String?       @db.ObjectId
+  parent     Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies    Comment[]     @relation("CommentReplies")
+  commentLikes CommentLike[]
+  createdAt  DateTime      @default(now())
+
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  commentId String   @db.ObjectId
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, userId])
+  @@map("comment_likes")
+}
+
+model SavedPost {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@map("saved_posts")
+}
+
+model Article {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorId  String   @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  title     String
+  content   String
+  category  String
+  tags      String[]
+  readTime  Int      @default(5)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("articles")
+}
+
+model Booking {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @db.ObjectId
+  user         User          @relation("UserBookings", fields: [userId], references: [id])
+  developerId  String        @db.ObjectId
+  developer    Developer     @relation("DeveloperBookings", fields: [developerId], references: [id])
+  date         DateTime
+  time         String
+  duration     Int           @default(60)
+  topic        String
+  description  String?
+  status       BookingStatus @default(PENDING)
+  amount       Float
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("bookings")
+}
+
+model Review {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  authorId     String    @db.ObjectId
+  author       User      @relation("ReviewAuthor", fields: [authorId], references: [id])
+  developerId  String    @db.ObjectId
+  developer    Developer @relation("DeveloperReviews", fields: [developerId], references: [id])
+  rating       Int
+  comment      String
+  createdAt    DateTime  @default(now())
+
+  @@map("reviews")
+}
+
+model Message {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String   @db.ObjectId
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("messages")
+}
+
+model Payment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId   String   @db.ObjectId
+  amount      Float
+  method      String
+  status      String   @default("pending")
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@map("payments")
+}

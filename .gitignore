@@ -1,0 +1,14 @@
+# Environment variables
+.env
+.env*.local
+
+# Common ignores
+node_modules/
+.DS_Store
+
+# Build output
+build/
+.react-router/
+
+# Prisma
+prisma/*.db
