@@ -213,10 +213,41 @@ model Payment {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   bookingId   String   @db.ObjectId
   amount      Float
-  method      String
+  method      String   @default("wallet")
   status      String   @default("pending")
   paidAt      DateTime?
   createdAt   DateTime @default(now())
 
   @@map("payments")
+}
+
+model Wallet {
+  id           String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String              @unique @db.ObjectId
+  balance      Float               @default(0)
+  transactions WalletTransaction[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@map("wallets")
+}
+
+enum TransactionType {
+  TOP_UP
+  BOOKING_PAYMENT
+  COFFEE_TIP
+  REFUND
+}
+
+model WalletTransaction {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  walletId    String          @db.ObjectId
+  wallet      Wallet          @relation(fields: [walletId], references: [id])
+  type        TransactionType
+  amount      Float
+  description String
+  bookingId   String?         @db.ObjectId
+  createdAt   DateTime        @default(now())
+
+  @@map("wallet_transactions")
 }

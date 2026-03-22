@@ -14,8 +14,9 @@ import {
   Star,
   Clock,
   Calendar,
-  CreditCard,
+  Wallet,
   Shield,
+  Coffee,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -56,6 +57,8 @@ export default function BookingPage() {
   const [selectedDuration, setSelectedDuration] = useState(60)
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [coffeeTip, setCoffeeTip] = useState<number>(0)
+  const walletBalance = 408 // Mock wallet balance
 
   const initials = developer.name
     .split(" ")
@@ -273,59 +276,95 @@ export default function BookingPage() {
                 </Card>
               )}
 
-              {/* Step 3: Payment */}
+              {/* Step 3: Pay with Wallet */}
               {step === 3 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Payment</CardTitle>
+                    <CardTitle>Pay with Wallet</CardTitle>
                     <CardDescription>
-                      Complete your booking with secure payment
+                      Use your wallet balance to complete the booking
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Wallet Balance */}
+                    <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                          <Wallet className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Wallet Balance</p>
+                          <p className="text-lg font-semibold">{walletBalance.toLocaleString()} Kip</p>
+                        </div>
+                      </div>
+                      {walletBalance < totalPrice + coffeeTip && (
+                        <Link to="/user/profile?tab=payment">
+                          <Button variant="outline" size="sm">Top Up</Button>
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Coffee Tip */}
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-2 text-sm font-medium">
+                        <Coffee className="h-4 w-4 text-amber-400" />
+                        Buy a coffee for {developer.name.split(" ")[0]}?
+                      </label>
+                      <p className="text-sm text-muted-foreground">
+                        Show your appreciation with a small tip
+                      </p>
+                      <div className="flex gap-2">
+                        {[0, 5, 10, 20].map((tip) => (
+                          <button
+                            key={tip}
+                            type="button"
+                            onClick={() => setCoffeeTip(tip)}
+                            className={cn(
+                              "rounded-lg border px-4 py-2 text-sm font-medium transition-colors",
+                              coffeeTip === tip
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border hover:border-primary/50"
+                            )}
+                          >
+                            {tip === 0 ? "No thanks" : `${tip} Kip`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Payment Summary */}
+                    <div className="space-y-3 rounded-lg border border-border p-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Consultation fee</span>
+                        <span>{totalPrice.toFixed(2)} Kip</span>
+                      </div>
+                      {coffeeTip > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Coffee className="h-3.5 w-3.5 text-amber-400" />
+                            Coffee tip
+                          </span>
+                          <span>{coffeeTip} Kip</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between border-t border-border pt-3 font-semibold">
+                        <span>Total</span>
+                        <span className="text-primary">{(totalPrice + coffeeTip).toFixed(2)} Kip</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Remaining balance</span>
+                        <span className={cn(
+                          walletBalance - totalPrice - coffeeTip < 0 ? "text-destructive" : "text-muted-foreground"
+                        )}>
+                          {(walletBalance - totalPrice - coffeeTip).toLocaleString()} Kip
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="rounded-lg border border-border bg-secondary/30 p-4">
                       <div className="flex items-center gap-2 text-sm">
                         <Shield className="h-4 w-4 text-primary" />
                         <span>Your payment is protected by LaoDev</span>
-                      </div>
-                    </div>
-
-                    {/* Mock Payment Form */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="mb-2 block text-sm font-medium">
-                          Card Number
-                        </label>
-                        <div className="relative">
-                          <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <input
-                            type="text"
-                            placeholder="4242 4242 4242 4242"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="mb-2 block text-sm font-medium">
-                            Expiry Date
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="MM/YY"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium">
-                            CVC
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="123"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          />
-                        </div>
                       </div>
                     </div>
 
@@ -337,9 +376,13 @@ export default function BookingPage() {
                       <Button
                         className="flex-1"
                         onClick={handlePayment}
-                        disabled={isLoading}
+                        disabled={isLoading || walletBalance < totalPrice + coffeeTip}
                       >
-                        {isLoading ? "Processing..." : `Pay ${totalPrice.toFixed(2)} Kip`}
+                        {isLoading
+                          ? "Processing..."
+                          : walletBalance < totalPrice + coffeeTip
+                            ? "Insufficient Balance"
+                            : `Pay ${(totalPrice + coffeeTip).toFixed(2)} Kip from Wallet`}
                       </Button>
                     </div>
                   </CardContent>
@@ -454,13 +497,22 @@ export default function BookingPage() {
                       </span>
                       <span>{totalPrice.toFixed(2)} Kip</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Service Fee</span>
-                      <span>0 Kip</span>
-                    </div>
+                    {coffeeTip > 0 && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1 text-muted-foreground">
+                          <Coffee className="h-3.5 w-3.5 text-amber-400" />
+                          Coffee tip
+                        </span>
+                        <span>{coffeeTip} Kip</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between border-t border-border pt-3 text-lg font-semibold">
                       <span>Total</span>
-                      <span className="text-primary">{totalPrice.toFixed(2)} Kip</span>
+                      <span className="text-primary">{(totalPrice + coffeeTip).toFixed(2)} Kip</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Wallet className="h-3.5 w-3.5" />
+                      Paying from wallet
                     </div>
                   </div>
                 </CardContent>
