@@ -1,12 +1,16 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 import { Form, useFetcher, useActionData, useNavigation } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { BottomBar } from "@/components/bottom-bar"
@@ -34,10 +38,21 @@ import {
   Coffee,
   CheckCircle2,
   History,
-  Loader2,
   Eye,
   EyeOff,
   Loader,
+  Phone,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Heart,
+  User,
+  Upload,
+  Download,
+  X,
+  Clock,
+  ImageIcon,
+  ZoomIn,
 } from "lucide-react"
 
 const bottomBarItems = [
@@ -48,18 +63,6 @@ const bottomBarItems = [
   { href: "/user/profile", label: "Profile", icon: Users },
 ]
 
-const topUpPresets = [50, 100, 200, 500, 1000]
-
-const walletTransactions = [
-  { id: "1", type: "top_up" as const, amount: 200, description: "Wallet Top-up", date: "Mar 20, 2026" },
-  { id: "2", type: "booking" as const, amount: -45, description: "Code Review - Somsak P.", date: "Mar 20, 2026" },
-  { id: "3", type: "coffee" as const, amount: -5, description: "Coffee tip - Somsak P.", date: "Mar 20, 2026" },
-  { id: "4", type: "top_up" as const, amount: 100, description: "Wallet Top-up", date: "Mar 15, 2026" },
-  { id: "5", type: "booking" as const, amount: -82, description: "CI/CD Setup - Thongchanh S.", date: "Mar 15, 2026" },
-  { id: "6", type: "top_up" as const, amount: 300, description: "Wallet Top-up", date: "Mar 10, 2026" },
-  { id: "7", type: "booking" as const, amount: -50, description: "API Design - Viengkham S.", date: "Mar 10, 2026" },
-  { id: "8", type: "coffee" as const, amount: -10, description: "Coffee tip - Viengkham S.", date: "Mar 10, 2026" },
-]
 
 // --- Loader ---
 export async function loader({ request }: Route.LoaderArgs) {
@@ -72,6 +75,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       email: true,
       avatar: true,
       bio: true,
+      phone: true,
+      address: true,
+      dob: true,
+      gender: true,
+      status: true,
+      interests: true,
+      career: true,
+      education: true,
       createdAt: true,
       emailVerified: true,
     },
@@ -79,7 +90,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (!user) throw new Response("User not found", { status: 404 })
 
-  return { user }
+  const pendingTopUps = await prisma.topUpRequest.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  })
+
+  const wallet = await prisma.wallet.findUnique({
+    where: { userId: session.userId },
+    include: {
+      transactions: {
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      },
+    },
+  })
+
+  return { user, pendingTopUps, wallet }
 }
 
 // --- Action ---
@@ -92,6 +119,19 @@ export async function action({ request }: Route.ActionArgs) {
   if (intent === "update-profile") {
     const name = String(formData.get("name") || "").trim()
     const email = String(formData.get("email") || "").trim()
+    const bio = formData.get("bio") ? String(formData.get("bio")).trim() : null
+    const phone = formData.get("phone") ? String(formData.get("phone")).trim() : null
+    const address = formData.get("address") ? String(formData.get("address")).trim() : null
+    const dobRaw = formData.get("dob") ? String(formData.get("dob")).trim() : null
+    const dob = dobRaw ? new Date(dobRaw) : null
+    const gender = formData.get("gender") ? String(formData.get("gender")).trim() : null
+    const status = formData.get("status") ? String(formData.get("status")).trim() : null
+    const career = formData.get("career") ? String(formData.get("career")).trim() : null
+    const education = formData.get("education") ? String(formData.get("education")).trim() : null
+    const interestsRaw = formData.get("interests") ? String(formData.get("interests")).trim() : ""
+    const interests = interestsRaw
+      ? interestsRaw.split(",").map((s) => s.trim()).filter(Boolean)
+      : null
 
     if (!name || !email) {
       return { intent, error: "Name and email are required" }
@@ -107,7 +147,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     const updated = await prisma.user.update({
       where: { id: session.userId },
-      data: { name, email },
+      data: { name, email, bio, phone, address, dob, gender, status, career, education, interests },
     })
 
     // Refresh session if name/email changed
@@ -197,12 +237,58 @@ export async function action({ request }: Route.ActionArgs) {
     return { intent, success: "Password changed successfully" }
   }
 
+  // --- Top Up Request ---
+  if (intent === "topup-request") {
+    const amount = Number(formData.get("amount"))
+    const file = formData.get("slip") as File | null
+
+    if (!amount || amount <= 0) {
+      return { intent, error: "Please enter a valid amount" }
+    }
+
+    if (!file || file.size === 0) {
+      return { intent, error: "Please upload your payment slip" }
+    }
+
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      return { intent, error: "File too large. Maximum 10MB" }
+    }
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"]
+    if (!validTypes.includes(file.type)) {
+      return { intent, error: "Invalid file type. Use JPG, PNG, or WebP" }
+    }
+
+    const slipUrl = await uploadToBunny(file, "payment-slips")
+
+    await prisma.topUpRequest.create({
+      data: {
+        userId: session.userId,
+        amount,
+        slipUrl,
+      },
+    })
+
+    return { intent, success: "Top-up request submitted! Your balance will be updated once approved by admin." }
+  }
+
+  // --- Delete Account (soft delete) ---
+  if (intent === "delete-account") {
+    await prisma.user.update({
+      where: { id: session.userId },
+      data: { status: "inactive" },
+    })
+
+    return { intent, success: "Account deactivated" }
+  }
+
   return { error: "Invalid action" }
 }
 
 // --- Component ---
 export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
-  const { user } = loaderData
+  const { user, pendingTopUps, wallet } = loaderData
   const actionData = useActionData<typeof action>()
   const navigation = useNavigation()
 
@@ -295,7 +381,7 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
 
             {/* Wallet Tab */}
             <TabsContent value="payment" className="space-y-6">
-              <WalletSection />
+              <WalletSection pendingTopUps={pendingTopUps} wallet={wallet} />
             </TabsContent>
 
             {/* Settings Tab */}
@@ -364,7 +450,7 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
                         Permanently delete your account and all data
                       </p>
                     </div>
-                    <Button variant="destructive">Delete Account</Button>
+                    <DeleteAccountButton />
                   </div>
                 </CardContent>
               </Card>
@@ -450,24 +536,137 @@ function ProfileForm({
   actionData,
   isSubmitting,
 }: {
-  user: { name: string; email: string }
+  user: {
+    name: string
+    email: string
+    bio: string | null
+    phone: string | null
+    address: string | null
+    dob: Date | string | null
+    gender: string | null
+    status: string | null
+    interests: unknown
+    career: string | null
+    education: string | null
+  }
   actionData: { error?: string; success?: string } | null
   isSubmitting: boolean
 }) {
+  const dobValue = user.dob ? new Date(user.dob).toISOString().split("T")[0] : ""
+  const interestsValue = Array.isArray(user.interests) ? (user.interests as string[]).join(", ") : ""
+
   return (
     <Form method="post">
       <input type="hidden" name="intent" value="update-profile" />
-      <div className="grid gap-4 sm:grid-cols-2 py-6">
-        <div className="space-y-2">
-          <Label htmlFor="name">Full Name <span className="text-rose-500">*</span></Label>
-          <Input id="name" name="name" defaultValue={user.name} required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email <span className="text-rose-500">*</span></Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input id="email" name="email" type="email" className="pl-9" defaultValue={user.email} required />
+      <div className="space-y-6 py-6">
+        {/* Name & Email */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name <span className="text-rose-500">*</span></Label>
+            <div className="relative">
+              <User className="absolute left-3 mt-1 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="name" name="name" defaultValue={user.name} required className="pl-9" />
+            </div>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email <span className="text-rose-500">*</span></Label>
+            <div className="relative">
+              <Mail className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="email" name="email" type="email" className="pl-9" defaultValue={user.email} required />
+            </div>
+          </div>
+        </div>
+
+        {/* Phone & Date of Birth */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone <span className="text-rose-500">*</span></Label>
+            <div className="relative">
+              <Phone className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="phone" name="phone" type="tel" className="pl-9" defaultValue={user.phone || ""} placeholder="+856 20 xxxx xxxx" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dob">Date of Birth <span className="text-rose-500">*</span></Label>
+            <div className="relative">
+              <Calendar className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="dob" name="dob" type="date" className="pl-9" defaultValue={dobValue} />
+            </div>
+          </div>
+        </div>
+
+        {/* Gender & Status */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="gender">Gender <span className="text-rose-500">*</span></Label>
+            <Select name="gender" defaultValue={user.gender || ""}>
+              <SelectTrigger className="w-full border border-primary/20">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status <span className="text-rose-500">*</span></Label>
+            <Select name="status" defaultValue={user.status || ""}>
+              <SelectTrigger className="w-full border border-primary/20">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="busy">Busy</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Address */}
+        <div className="space-y-2">
+          <Label htmlFor="address">Address <span className="text-rose-500">*</span></Label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-4 h-4 w-4 text-muted-foreground" />
+            <Input id="address" name="address" className="pl-9" defaultValue={user.address || ""} placeholder="City, Country" />
+          </div>
+        </div>
+
+        {/* Bio */}
+        <div className="space-y-2">
+          <Label htmlFor="bio">Bio <span className="text-rose-500">*</span></Label>
+          <Textarea className="border border-primary/30" id="bio" name="bio" rows={3} defaultValue={user.bio || ""} placeholder="Tell us about yourself..." />
+        </div>
+
+        {/* Career & Education */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="career">Career <span className="text-rose-500">*</span></Label>
+            <div className="relative">
+              <Briefcase className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="career" name="career" className="pl-9" defaultValue={user.career || ""} placeholder="e.g. Software Engineer" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="education">Education <span className="text-rose-500">*</span></Label>
+            <div className="relative">
+              <GraduationCap className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="education" name="education" className="pl-9" defaultValue={user.education || ""} placeholder="e.g. BSc Computer Science" />
+            </div>
+          </div>
+        </div>
+
+        {/* Interests */}
+        <div className="space-y-2">
+          <Label htmlFor="interests">Interests <span className="text-rose-500">*</span></Label>
+          <div className="relative">
+            <Heart className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input id="interests" name="interests" className="pl-9" defaultValue={interestsValue} placeholder="e.g. React, TypeScript, DevOps (comma separated)" />
+          </div>
+          <p className="text-xs text-muted-foreground">Separate multiple interests with commas</p>
         </div>
       </div>
 
@@ -580,51 +779,167 @@ function PasswordForm({
   )
 }
 
-// --- Wallet Section (unchanged from before, UI-only for now) ---
-function WalletSection() {
-  const [balance, setBalance] = useState(408)
+// --- Delete Account Button ---
+function DeleteAccountButton() {
+  const fetcher = useFetcher<typeof action>()
+  const isDeleting = fetcher.state !== "idle"
+
+  useEffect(() => {
+    if (fetcher.data && "intent" in fetcher.data && fetcher.data.intent === "delete-account" && "success" in fetcher.data) {
+      toast.success("Your account has been deactivated.")
+      window.location.href = "/login"
+    }
+  }, [fetcher.data])
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive">Delete Account</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action will deactivate your account. You will be logged out and will no longer be able to access your account.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-white hover:bg-destructive/90"
+            disabled={isDeleting}
+            onClick={(e) => {
+              e.preventDefault()
+              fetcher.submit({ intent: "delete-account" }, { method: "post" })
+            }}
+          >
+            {isDeleting ? (
+              <>
+                <Loader className="h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Yes, delete my account"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+// --- Wallet Section ---
+type TopUpRequest = {
+  id: string
+  amount: number
+  slipUrl: string
+  status: "PENDING" | "APPROVED" | "REJECTED"
+  createdAt: Date | string
+}
+
+type WalletTransaction = {
+  id: string
+  type: string
+  amount: number
+  description: string
+  createdAt: Date | string
+}
+
+type WalletData = {
+  balance: number
+  transactions: WalletTransaction[]
+} | null
+
+function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[]; wallet: WalletData }) {
+  const fetcher = useFetcher<typeof action>()
+  const balance = wallet?.balance ?? 0
+  const transactions = wallet?.transactions ?? []
   const [topUpAmount, setTopUpAmount] = useState<number | "">("")
   const [isTopUpOpen, setIsTopUpOpen] = useState(false)
-  const [topUpStep, setTopUpStep] = useState<"select" | "confirm" | "success">("select")
-  const [transactions, setTransactions] = useState(walletTransactions)
+  const [topUpStep, setTopUpStep] = useState<"select" | "payment" | "upload">("select")
+  const [slipFile, setSlipFile] = useState<File | null>(null)
+  const [slipPreview, setSlipPreview] = useState<string | null>(null)
+  const [showExampleSlip, setShowExampleSlip] = useState(false)
 
-  const handleTopUp = () => {
+
+  const isSubmitting = fetcher.state !== "idle"
+  const fetcherSuccess = fetcher.data && "intent" in fetcher.data && fetcher.data.intent === "topup-request" && "success" in fetcher.data
+  const fetcherError = fetcher.data && "intent" in fetcher.data && fetcher.data.intent === "topup-request" && "error" in fetcher.data
+
+  useEffect(() => {
+    if (fetcherSuccess) {
+      toast.success("Top-up request submitted! Your balance will be updated once approved by admin.")
+      resetTopUp()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcherSuccess])
+
+  // Generate quick amounts only when user is typing (not after selecting a quick amount)
+  const [pickedQuickAmount, setPickedQuickAmount] = useState(false)
+  const quickAmounts = topUpAmount && Number(topUpAmount) > 0 && !pickedQuickAmount
+    ? [
+        Number(topUpAmount) * 1000,
+        Number(topUpAmount) * 10000,
+        Number(topUpAmount) * 100000,
+        Number(topUpAmount) * 1000000,
+      ]
+    : []
+
+  const handleContinue = () => {
     if (!topUpAmount || topUpAmount <= 0) return
-    setTopUpStep("confirm")
+    setTopUpStep("payment")
   }
 
-  const confirmTopUp = () => {
-    const amount = Number(topUpAmount)
-    setBalance((prev) => prev + amount)
-    setTransactions((prev) => [
-      {
-        id: String(Date.now()),
-        type: "top_up" as const,
-        amount,
-        description: "Wallet Top-up",
-        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      },
-      ...prev,
-    ])
-    setTopUpStep("success")
+  const handleSlipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSlipFile(file)
+    setSlipPreview(URL.createObjectURL(file))
+  }
+
+  const handleSubmitTopUp = () => {
+    if (!slipFile || !topUpAmount) return
+    const formData = new FormData()
+    formData.set("intent", "topup-request")
+    formData.set("amount", String(topUpAmount))
+    formData.set("slip", slipFile)
+    fetcher.submit(formData, { method: "post", encType: "multipart/form-data" })
   }
 
   const resetTopUp = () => {
     setTopUpAmount("")
+    setPickedQuickAmount(false)
     setTopUpStep("select")
+    setSlipFile(null)
+    setSlipPreview(null)
     setIsTopUpOpen(false)
   }
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case "top_up":
+      case "TOP_UP":
         return <ArrowDownLeft className="h-4 w-4 text-emerald-400" />
-      case "booking":
+      case "BOOKING_PAYMENT":
         return <ArrowUpRight className="h-4 w-4 text-orange-400" />
-      case "coffee":
+      case "COFFEE_TIP":
         return <Coffee className="h-4 w-4 text-amber-400" />
+      case "REFUND":
+        return <ArrowDownLeft className="h-4 w-4 text-blue-400" />
       default:
         return <History className="h-4 w-4 text-muted-foreground" />
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return <span className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400"><Clock className="h-3 w-3" />Pending</span>
+      case "APPROVED":
+        return <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400"><CheckCircle2 className="h-3 w-3" />Approved</span>
+      case "REJECTED":
+        return <span className="flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400"><X className="h-3 w-3" />Rejected</span>
+      default:
+        return null
     }
   }
 
@@ -654,46 +969,26 @@ function WalletSection() {
                   Top Up
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+                {/* Step 1: Enter Amount */}
                 {topUpStep === "select" && (
                   <>
                     <DialogHeader>
                       <DialogTitle>Top Up Wallet</DialogTitle>
                       <DialogDescription>
-                        Add funds to your wallet to book developers and send coffee tips
+                        Enter the amount you'd like to add
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6 pt-4">
-                      <div>
-                        <label className="mb-3 block text-sm font-medium">Quick amounts</label>
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                          {topUpPresets.map((preset) => (
-                            <button
-                              key={preset}
-                              type="button"
-                              onClick={() => setTopUpAmount(preset)}
-                              className={cn(
-                                "rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
-                                topUpAmount === preset
-                                  ? "border-primary bg-primary/10 text-foreground"
-                                  : "border-border hover:border-primary/50"
-                              )}
-                            >
-                              {preset}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
-                        <Label>Or enter custom amount</Label>
+                        <Label>Amount (Kip)</Label>
                         <div className="relative">
                           <Input
                             type="number"
                             min={1}
-                            placeholder="Enter amount"
+                            placeholder="Type a number to see quick amounts..."
                             value={topUpAmount}
-                            onChange={(e) => setTopUpAmount(e.target.value ? Number(e.target.value) : "")}
+                            onChange={(e) => { setTopUpAmount(e.target.value ? Number(e.target.value) : ""); setPickedQuickAmount(false) }}
                             className="pr-12"
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -702,10 +997,33 @@ function WalletSection() {
                         </div>
                       </div>
 
+                      {quickAmounts.length > 0 && (
+                        <div>
+                          <label className="mb-3 block text-sm font-medium text-muted-foreground">Quick amounts</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {quickAmounts.map((amount) => (
+                              <button
+                                key={amount}
+                                type="button"
+                                onClick={() => { setTopUpAmount(amount); setPickedQuickAmount(true) }}
+                                className={cn(
+                                  "rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
+                                  topUpAmount === amount
+                                    ? "border-primary bg-primary/10 text-foreground"
+                                    : "border-border hover:border-primary/50"
+                                )}
+                              >
+                                {amount.toLocaleString()} Kip
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <Button
                         className="w-full gap-2"
                         disabled={!topUpAmount || topUpAmount <= 0}
-                        onClick={handleTopUp}
+                        onClick={handleContinue}
                       >
                         Continue
                       </Button>
@@ -713,66 +1031,211 @@ function WalletSection() {
                   </>
                 )}
 
-                {topUpStep === "confirm" && (
+                {/* Step 2: Payment via QR Code */}
+                {topUpStep === "payment" && (
                   <>
                     <DialogHeader>
-                      <DialogTitle>Confirm Top-up</DialogTitle>
+                      <DialogTitle>Pay via Bank Transfer</DialogTitle>
                       <DialogDescription>
-                        Review your top-up details
+                        Scan or download the QR code and pay <span className="font-semibold text-foreground">{Number(topUpAmount).toLocaleString()} Kip</span> using your bank app
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-6 pt-4">
-                      <div className="rounded-lg border border-border bg-secondary/30 p-6 text-center">
-                        <p className="text-sm text-muted-foreground">Amount to add</p>
-                        <p className="mt-1 text-3xl font-bold">{Number(topUpAmount).toLocaleString()} Kip</p>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          New balance: {(balance + Number(topUpAmount)).toLocaleString()} Kip
-                        </p>
+                    <div className="space-y-5 pt-4">
+                      {/* QR Code */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="overflow-hidden rounded-xl border border-border bg-white p-3">
+                          <img
+                            src="/qr-code.jpeg"
+                            alt="Payment QR Code"
+                            className="h-48 w-48 object-contain"
+                          />
+                        </div>
+                        <a
+                          href="/qr-code.jpeg"
+                          download="laodev-qr-code.jpeg"
+                          className="flex items-center gap-2 text-sm text-primary hover:underline"
+                        >
+                          <Download className="h-4 w-4" />
+                          Download QR Code
+                        </a>
                       </div>
 
-                      <div className="rounded-lg border border-border p-4">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Shield className="h-4 w-4 text-primary" />
-                          <span>Secured by LaoDev payment protection</span>
-                        </div>
+                      {/* Instructions */}
+                      <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm space-y-2">
+                        <p className="font-medium">How to pay:</p>
+                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                          <li>Download or screenshot the QR code above</li>
+                          <li>Open your bank app (BCEL One, LDB, JDB, etc.)</li>
+                          <li>Scan the QR code and pay <span className="font-semibold text-foreground">{Number(topUpAmount).toLocaleString()} Kip</span></li>
+                          <li>Take a screenshot of your payment confirmation</li>
+                          <li>Upload the payment slip in the next step</li>
+                        </ol>
                       </div>
 
                       <div className="flex gap-3">
                         <Button variant="outline" className="flex-1" onClick={() => setTopUpStep("select")}>
                           Back
                         </Button>
-                        <Button className="flex-1" onClick={confirmTopUp}>
-                          Confirm Top-up
+                        <Button className="flex-1" onClick={() => setTopUpStep("upload")}>
+                          I've Paid — Upload Slip
                         </Button>
                       </div>
                     </div>
                   </>
                 )}
 
-                {topUpStep === "success" && (
+                {/* Step 3: Upload Payment Slip */}
+                {topUpStep === "upload" && (
                   <>
-                    <div className="py-8 text-center">
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
-                        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                    <DialogHeader>
+                      <DialogTitle>Upload Payment Slip</DialogTitle>
+                      <DialogDescription>
+                        Upload your payment confirmation for <span className="font-semibold text-foreground">{Number(topUpAmount).toLocaleString()} Kip</span>
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-5 pt-4">
+                      {/* Example Payment Slip */}
+                      {!slipPreview && <div className="space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">Example payment slip:</p>
+                        <button
+                          type="button"
+                          onClick={() => setShowExampleSlip(true)}
+                          className="group relative overflow-hidden rounded-lg border border-border"
+                        >
+                          <img
+                            src="/payment-slip.jpg"
+                            alt="Example payment slip"
+                            className="h-24 w-auto object-cover opacity-80 transition-opacity group-hover:opacity-100"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                            <ZoomIn className="h-5 w-5 text-white" />
+                          </div>
+                        </button>
+                      </div>}
+
+                      {/* Upload Area */}
+                      <div className="flex flex-col items-center">
+                        {slipPreview ? (
+                          <div className="relative w-full">
+                            <img
+                              src={slipPreview}
+                              alt="Payment slip preview"
+                              className="mx-auto max-h-64 rounded-lg border border-border object-contain"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => { setSlipFile(null); setSlipPreview(null) }}
+                              className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="flex w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border p-8 transition-colors hover:border-primary/50 hover:bg-primary/5">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                              <Upload className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-center">
+                              <p className="font-medium">Click to upload payment slip</p>
+                              <p className="text-sm text-muted-foreground">JPG, PNG or WebP (max 10MB)</p>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className="hidden"
+                              onChange={handleSlipChange}
+                            />
+                          </label>
+                        )}
                       </div>
-                      <h3 className="text-xl font-semibold">Top-up Successful!</h3>
-                      <p className="mt-2 text-muted-foreground">
-                        {Number(topUpAmount).toLocaleString()} Kip has been added to your wallet
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        New balance: <span className="font-semibold text-foreground">{balance.toLocaleString()} Kip</span>
-                      </p>
-                      <Button className="mt-6" onClick={resetTopUp}>
-                        Done
-                      </Button>
+
+                      {/* Summary */}
+                      <div className="rounded-lg border border-border bg-secondary/30 p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Top-up amount</span>
+                          <span className="font-semibold">{Number(topUpAmount).toLocaleString()} Kip</span>
+                        </div>
+                      </div>
+
+                      {fetcherError && fetcher.data && "error" in fetcher.data && (
+                        <p className="text-sm text-destructive">{fetcher.data.error as string}</p>
+                      )}
+
+                      <div className="flex gap-3">
+                        <Button variant="outline" className="flex-1" onClick={() => setTopUpStep("payment")}>
+                          Back
+                        </Button>
+                        <Button
+                          className="flex-1 gap-2"
+                          disabled={!slipFile || isSubmitting}
+                          onClick={handleSubmitTopUp}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader className="h-4 w-4 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            "Submit Top-up"
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </>
                 )}
+
+              </DialogContent>
+            </Dialog>
+
+            {/* Fullscreen Example Slip Viewer */}
+            <Dialog open={showExampleSlip} onOpenChange={setShowExampleSlip}>
+              <DialogContent className="max-w-lg p-2">
+                <img
+                  src="/payment-slip.jpg"
+                  alt="Example payment slip"
+                  className="w-full rounded-lg object-contain"
+                />
               </DialogContent>
             </Dialog>
           </CardContent>
         </div>
       </Card>
+
+      {/* Pending Top-up Requests */}
+      {pendingTopUps.length > 0 && (
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Top-up Requests
+            </CardTitle>
+            <CardDescription>Your recent top-up submissions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {pendingTopUps.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary">
+                      <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{req.amount.toLocaleString()} Kip</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(req.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                    </div>
+                  </div>
+                  {getStatusBadge(req.status)}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* How Wallet Works */}
       <Card className="border-border">
@@ -787,7 +1250,7 @@ function WalletSection() {
               </div>
               <div>
                 <p className="font-medium">Top up</p>
-                <p className="text-sm text-muted-foreground">Add funds to your wallet anytime</p>
+                <p className="text-sm text-muted-foreground">Pay via QR code and upload slip</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -822,30 +1285,37 @@ function WalletSection() {
           <CardDescription>Your recent wallet activity</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary">
-                    {getTransactionIcon(tx.type)}
+          {transactions.length === 0 ? (
+            <div className="py-8 text-center">
+              <History className="mx-auto h-8 w-8 text-muted-foreground/50" />
+              <p className="mt-2 text-sm text-muted-foreground">No transactions yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {transactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary">
+                      {getTransactionIcon(tx.type)}
+                    </div>
+                    <div>
+                      <p className="font-medium">{tx.description}</p>
+                      <p className="text-sm text-muted-foreground">{new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{tx.description}</p>
-                    <p className="text-sm text-muted-foreground">{tx.date}</p>
-                  </div>
+                  <p className={cn(
+                    "font-semibold",
+                    (tx.type === "TOP_UP" || tx.type === "REFUND") ? "text-emerald-400" : "text-foreground"
+                  )}>
+                    {(tx.type === "TOP_UP" || tx.type === "REFUND") ? "+" : "-"}{tx.amount.toLocaleString()} Kip
+                  </p>
                 </div>
-                <p className={cn(
-                  "font-semibold",
-                  tx.amount > 0 ? "text-emerald-400" : "text-foreground"
-                )}>
-                  {tx.amount > 0 ? "+" : ""}{tx.amount} Kip
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </>

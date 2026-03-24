@@ -34,6 +34,14 @@ model User {
   role              Role            @default(USER)
   avatar            String?
   bio               String?
+  phone             String?
+  address           String?
+  dob               DateTime?
+  gender            String?
+  status            String?
+  interests         Json?
+  career            String?
+  education         String?
   emailVerified     Boolean         @default(false)
   otpCode           String?
   otpExpiry         DateTime?
@@ -250,4 +258,22 @@ model WalletTransaction {
   createdAt   DateTime        @default(now())
 
   @@map("wallet_transactions")
+}
+
+enum TopUpStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model TopUpRequest {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String      @db.ObjectId
+  amount      Float
+  slipUrl     String
+  status      TopUpStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("topup_requests")
 }
