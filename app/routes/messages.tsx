@@ -196,7 +196,7 @@ export default function MessagesPage() {
           <div className="border-b border-border p-4">
             <h1 className="text-xl font-semibold">Messages</h1>
             <div className="relative mt-3">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input placeholder="Search conversations..." className="pl-9" />
             </div>
           </div>
@@ -229,10 +229,10 @@ export default function MessagesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="truncate font-semibold">{conv.name}</p>
-                      <span className="text-xs text-muted-foreground">{conv.time}</span>
+                      <span className="text-xs text-white">{conv.time}</span>
                     </div>
-                    <p className="truncate text-sm text-muted-foreground">{conv.title}</p>
-                    <p className="mt-1 truncate text-sm text-muted-foreground">
+                    <p className="truncate text-sm text-white">{conv.title}</p>
+                    <p className="mt-1 truncate text-sm text-white">
                       {conv.lastMessage}
                     </p>
                   </div>
@@ -275,7 +275,7 @@ export default function MessagesPage() {
                   </Avatar>
                   <div>
                     <p className="font-semibold">{selectedConv.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       {selectedConv.online ? (
                         <span className="text-emerald-500">Online</span>
                       ) : (
@@ -322,7 +322,7 @@ export default function MessagesPage() {
                             "mt-1 flex items-center justify-end gap-1 text-xs",
                             message.sender === "me"
                               ? "text-primary-foreground/70"
-                              : "text-muted-foreground"
+                              : "text-white"
                           )}
                         >
                           <span>{message.time}</span>
@@ -367,7 +367,7 @@ export default function MessagesPage() {
             <div className="flex flex-1 items-center justify-center">
               <div className="text-center">
                 <p className="text-lg font-medium">Select a conversation</p>
-                <p className="text-muted-foreground">
+                <p className="text-white">
                   Choose a conversation from the list to start chatting
                 </p>
               </div>

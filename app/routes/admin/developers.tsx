@@ -248,7 +248,7 @@ export default function AdminDevelopersPage() {
           </Avatar>
           <div>
             <p className="font-medium">{dev.name}</p>
-            <p className="text-sm text-muted-foreground">{dev.title}</p>
+            <p className="text-sm text-white">{dev.title}</p>
           </div>
         </div>
       ),
@@ -257,7 +257,7 @@ export default function AdminDevelopersPage() {
       key: "email",
       label: "Email",
       render: (dev) => (
-        <span className="text-sm text-muted-foreground">{dev.email}</span>
+        <span className="text-sm text-white">{dev.email}</span>
       ),
     },
     {
@@ -266,7 +266,7 @@ export default function AdminDevelopersPage() {
       sortable: true,
       render: (dev) => (
         <div className="flex items-center gap-1 text-sm">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
+          <MapPin className="h-4 w-4 text-white" />
           {dev.location}
         </div>
       ),
@@ -277,7 +277,7 @@ export default function AdminDevelopersPage() {
       sortable: true,
       render: (dev) => (
         <div className="flex items-center gap-1 text-sm">
-          <Briefcase className="h-4 w-4 text-muted-foreground" />
+          <Briefcase className="h-4 w-4 text-white" />
           {dev.experience} yrs
         </div>
       ),
@@ -304,13 +304,13 @@ export default function AdminDevelopersPage() {
           <div className="text-sm">
             <p>{dev.bookings} bookings</p>
             {dev.rating && (
-              <p className="text-muted-foreground">
+              <p className="text-white">
                 {dev.rating} rating
               </p>
             )}
           </div>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-white">-</span>
         ),
     },
   ]
@@ -327,7 +327,7 @@ export default function AdminDevelopersPage() {
             </Avatar>
             <div>
               <p className="font-medium">{dev.name}</p>
-              <p className="text-sm text-muted-foreground">{dev.title}</p>
+              <p className="text-sm text-white">{dev.title}</p>
             </div>
           </div>
           <DropdownMenu>
@@ -382,11 +382,11 @@ export default function AdminDevelopersPage() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-1 text-muted-foreground">
+          <div className="flex items-center gap-1 text-white">
             <MapPin className="h-4 w-4" />
             {dev.location}
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground">
+          <div className="flex items-center gap-1 text-white">
             <Briefcase className="h-4 w-4" />
             {dev.experience} years
           </div>
@@ -423,7 +423,7 @@ export default function AdminDevelopersPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Developers</h1>
-        <p className="text-muted-foreground">
+        <p className="text-white">
           Review and manage developer applications
         </p>
       </div>
@@ -437,7 +437,7 @@ export default function AdminDevelopersPage() {
                 <Clock className="h-5 w-5 text-yellow-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-sm text-white">Pending</p>
                 <p className="text-2xl font-bold">{pendingCount}</p>
               </div>
             </div>
@@ -450,7 +450,7 @@ export default function AdminDevelopersPage() {
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Approved</p>
+                <p className="text-sm text-white">Approved</p>
                 <p className="text-2xl font-bold">{approvedCount}</p>
               </div>
             </div>
@@ -463,7 +463,7 @@ export default function AdminDevelopersPage() {
                 <XCircle className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Rejected</p>
+                <p className="text-sm text-white">Rejected</p>
                 <p className="text-2xl font-bold">{rejectedCount}</p>
               </div>
             </div>
@@ -538,8 +538,8 @@ export default function AdminDevelopersPage() {
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold">{selectedDeveloper.name}</h3>
-                    <p className="text-muted-foreground">{selectedDeveloper.title}</p>
-                    <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+                    <p className="text-white">{selectedDeveloper.title}</p>
+                    <div className="mt-2 flex items-center gap-4 text-sm text-white">
                       <div className="flex items-center gap-1">
                         <Mail className="h-4 w-4" />
                         {selectedDeveloper.email}
@@ -555,7 +555,7 @@ export default function AdminDevelopersPage() {
 
                 <div>
                   <h4 className="mb-2 font-semibold">Bio</h4>
-                  <p className="text-sm text-muted-foreground">{selectedDeveloper.bio}</p>
+                  <p className="text-sm text-white">{selectedDeveloper.bio}</p>
                 </div>
 
                 <div>
@@ -571,14 +571,14 @@ export default function AdminDevelopersPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-white">
                       <Briefcase className="h-4 w-4" />
                       Experience
                     </div>
                     <p className="mt-1 font-medium">{selectedDeveloper.experience} years</p>
                   </div>
                   <div className="rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-white">
                       <DollarSign className="h-4 w-4" />
                       Hourly Rate
                     </div>
@@ -590,11 +590,11 @@ export default function AdminDevelopersPage() {
                   selectedDeveloper.bookings !== undefined && (
                     <div className="grid grid-cols-2 gap-4 rounded-lg bg-muted/50 p-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Bookings</p>
+                        <p className="text-sm text-white">Total Bookings</p>
                         <p className="text-2xl font-bold">{selectedDeveloper.bookings}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Rating</p>
+                        <p className="text-sm text-white">Rating</p>
                         <p className="text-2xl font-bold">{selectedDeveloper.rating}</p>
                       </div>
                     </div>

@@ -195,96 +195,96 @@ function ArticleCard({ article, featured = false }: { article: typeof articles[0
 
   return (
     <Link to={`/knowledge/${article.id}`} className="block">
-    <Card className={`group relative overflow-hidden border-border bg-card transition-all duration-500 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 ${featured ? 'md:col-span-2' : ''}`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-      <div className="absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <Card className={`group relative overflow-hidden border-border bg-card transition-all duration-500 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 ${featured ? 'md:col-span-2' : ''}`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute left-0 right-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-      <CardContent className="relative px-6 py-3">
-        {/* Category & Featured Badge */}
-        <div className="flex items-center justify-between mb-4">
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            {article.category}
-          </Badge>
-          {article.isFeatured && (
-            <Badge className="gap-1 bg-amber-500/20 text-amber-400">
-              <TrendingUp className="h-3 w-3" />
-              Featured
+        <CardContent className="relative px-6 py-3">
+          {/* Category & Featured Badge */}
+          <div className="flex items-center justify-between mb-4">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              {article.category}
             </Badge>
-          )}
-        </div>
+            {article.isFeatured && (
+              <Badge className="gap-1 bg-amber-500/20 text-amber-400">
+                <TrendingUp className="h-3 w-3" />
+                Featured
+              </Badge>
+            )}
+          </div>
 
-        {/* Title & Excerpt */}
-        <h3 className={`font-semibold transition-colors group-hover:text-primary ${featured ? 'text-xl lg:text-2xl' : 'text-lg'}`}>
-          {article.title}
-        </h3>
-        <p className={`mt-2 text-muted-foreground line-clamp-2 ${featured ? 'text-base' : 'text-sm'}`}>
-          {article.excerpt}
-        </p>
+          {/* Title & Excerpt */}
+          <h3 className={`font-semibold transition-colors group-hover:text-primary ${featured ? 'text-xl lg:text-2xl' : 'text-lg'}`}>
+            {article.title}
+          </h3>
+          <p className={`mt-2 text-white line-clamp-2 ${featured ? 'text-base' : 'text-sm'}`}>
+            {article.excerpt}
+          </p>
 
-        {/* Tags */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {article.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs text-muted-foreground border-border hover:border-primary/50 hover:text-primary transition-colors cursor-pointer">
-              {tag}
-            </Badge>
-          ))}
-          {article.tags.length > 3 && (
-            <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
-              +{article.tags.length - 3}
-            </Badge>
-          )}
-        </div>
+          {/* Tags */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {article.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs text-white border-border hover:border-primary/50 hover:text-primary transition-colors cursor-pointer">
+                {tag}
+              </Badge>
+            ))}
+            {article.tags.length > 3 && (
+              <Badge variant="outline" className="text-xs text-white border-dashed">
+                +{article.tags.length - 3}
+              </Badge>
+            )}
+          </div>
 
-        {/* Author */}
-        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border border-border">
-              <AvatarImage src={article.author.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary text-xs font-semibold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-medium">
-                  {article.author.name}
-                </span>
-                {article.author.isVerified && (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                )}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{article.publishedAt}</span>
-                <span>·</span>
-                <span>{article.readTime} min read</span>
+          {/* Author */}
+          <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-border">
+                <AvatarImage src={article.author.avatar} />
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary text-xs font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium">
+                    {article.author.name}
+                  </span>
+                  {article.author.isVerified && (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-white">
+                  <span>{article.publishedAt}</span>
+                  <span>·</span>
+                  <span>{article.readTime} min read</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats & Actions */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Eye className="h-4 w-4" />
-              <span>{article.viewCount}</span>
+          {/* Stats & Actions */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-white">
+              <div className="flex items-center gap-1">
+                <Eye className="h-4 w-4" />
+                <span>{article.viewCount}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Heart className="h-4 w-4" />
+                <span>{article.likeCount}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-4 w-4" />
+                <span>{article.commentCount}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Heart className="h-4 w-4" />
-              <span>{article.likeCount}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4" />
-              <span>{article.commentCount}</span>
-            </div>
+            <Button size="sm" variant="outline" className="gap-2 border-amber-500/30 text-amber-500 hover:text-amber-500 hover:bg-amber-500/10 hover:border-amber-500 transition-all">
+              <Coffee className="h-4 w-4" />
+              <span>{article.coffeeCount}</span>
+            </Button>
           </div>
-          <Button size="sm" variant="outline" className="gap-2 border-amber-500/30 text-amber-500 hover:text-amber-500 hover:bg-amber-500/10 hover:border-amber-500 transition-all">
-            <Coffee className="h-4 w-4" />
-            <span>{article.coffeeCount}</span>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </Link>
   )
 }
@@ -346,7 +346,7 @@ export default function KnowledgeSharingPage() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl animate-fade-in-up opacity-0 stagger-1">
               Knowledge <span className="gradient-text">Sharing</span>
             </h1>
-            <p className="mt-3 max-w-2xl text-muted-foreground text-lg animate-fade-in-up opacity-0 stagger-2">
+            <p className="mt-3 max-w-2xl text-white text-lg animate-fade-in-up opacity-0 stagger-2">
               Learn from experienced Laos developers. Read articles, tutorials, and insights shared by our community - and buy them a coffee to show appreciation.
             </p>
 
@@ -367,28 +367,28 @@ export default function KnowledgeSharingPage() {
                   <Coffee className="h-5 w-5" />
                   <span className="text-2xl font-bold">2,847</span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">Coffees Given</p>
+                <p className="mt-1 text-sm text-white">Coffees Given</p>
               </div>
               <div className="rounded-xl border border-border bg-card/50 p-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <BookOpen className="h-5 w-5" />
                   <span className="text-2xl font-bold">{articles.length * 12}</span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">Articles Published</p>
+                <p className="mt-1 text-sm text-white">Articles Published</p>
               </div>
               <div className="rounded-xl border border-border bg-card/50 p-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-emerald-500">
                   <Users className="h-5 w-5" />
                   <span className="text-2xl font-bold">156</span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">Contributors</p>
+                <p className="mt-1 text-sm text-white">Contributors</p>
               </div>
               <div className="rounded-xl border border-border bg-card/50 p-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-blue-500">
                   <Lightbulb className="h-5 w-5" />
                   <span className="text-2xl font-bold">45K</span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">Total Readers</p>
+                <p className="mt-1 text-sm text-white">Total Readers</p>
               </div>
             </div>
           </div>
@@ -400,7 +400,7 @@ export default function KnowledgeSharingPage() {
             <div className="flex gap-4 flex-row lg:items-center lg:justify-between">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md group">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white transition-colors group-focus-within:text-primary" />
                 <Input
                   placeholder="Search articles, topics, or tags..."
                   value={searchQuery}
@@ -453,7 +453,7 @@ export default function KnowledgeSharingPage() {
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-white hover:text-white"
                   >
                     <X className="mr-1 h-4 w-4" />
                     Clear
@@ -543,11 +543,11 @@ export default function KnowledgeSharingPage() {
                   <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse-glow" />
                     <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-card border border-border">
-                      <Search className="h-10 w-10 text-muted-foreground" />
+                      <Search className="h-10 w-10 text-white" />
                     </div>
                   </div>
                   <h3 className="mt-6 text-xl font-semibold">No articles found</h3>
-                  <p className="mt-2 text-muted-foreground max-w-sm">
+                  <p className="mt-2 text-white max-w-sm">
                     Try adjusting your search or filters
                   </p>
                   <Button variant="outline" className="mt-6 gap-2" onClick={clearFilters}>
@@ -628,7 +628,7 @@ export default function KnowledgeSharingPage() {
                     <Lightbulb className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="font-semibold">Share Your Knowledge</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm text-white">
                     Are you a developer? Share your expertise and earn coffee from the community.
                   </p>
                   <Button className="mt-4 w-full gap-2">

@@ -237,7 +237,7 @@ export default function KnowledgeDetailPage() {
           {/* Back Button */}
           <Link
             to="/knowledge"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-white hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Knowledge Sharing
@@ -249,11 +249,11 @@ export default function KnowledgeDetailPage() {
               <Badge variant="secondary" className="bg-primary/10 text-primary">
                 {article.category}
               </Badge>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-white">
                 <Clock className="h-4 w-4" />
                 <span>{article.readTime} min read</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-white">
                 <Eye className="h-4 w-4" />
                 <span>{article.viewCount} views</span>
               </div>
@@ -263,7 +263,7 @@ export default function KnowledgeDetailPage() {
               {article.title}
             </h1>
 
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-4 text-lg text-white">
               {article.excerpt}
             </p>
 
@@ -294,8 +294,8 @@ export default function KnowledgeDetailPage() {
                       <CheckCircle2 className="h-4 w-4 text-primary" />
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">{article.author.title}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                  <p className="text-sm text-white">{article.author.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-white mt-1">
                     <Calendar className="h-3 w-3" />
                     {article.publishedAt}
                   </div>
@@ -328,24 +328,24 @@ export default function KnowledgeDetailPage() {
 
           {/* Article Content */}
           <div className="prose prose-invert prose-emerald max-w-none">
-            <div className="whitespace-pre-line text-foreground/90 leading-relaxed">
+            <div className="whitespace-pre-line text-white/90 leading-relaxed">
               {article.content.split('\n').map((line, i) => {
                 if (line.startsWith('## ')) {
-                  return <h2 key={i} className="text-2xl font-bold mt-10 mb-4 text-foreground">{line.replace('## ', '')}</h2>
+                  return <h2 key={i} className="text-2xl font-bold mt-10 mb-4 text-white">{line.replace('## ', '')}</h2>
                 }
                 if (line.startsWith('```')) {
                   return null
                 }
                 if (line.startsWith('- ')) {
-                  return <li key={i} className="ml-6 text-foreground/80">{line.replace('- ', '')}</li>
+                  return <li key={i} className="ml-6 text-white/80">{line.replace('- ', '')}</li>
                 }
                 if (line.startsWith('1. ') || line.match(/^\d\. /)) {
-                  return <li key={i} className="ml-6 text-foreground/80 list-decimal">{line.replace(/^\d\. /, '')}</li>
+                  return <li key={i} className="ml-6 text-white/80 list-decimal">{line.replace(/^\d\. /, '')}</li>
                 }
                 if (line.trim() === '') {
                   return <br key={i} />
                 }
-                return <p key={i} className="my-4 text-foreground/80">{line}</p>
+                return <p key={i} className="my-4 text-white/80">{line}</p>
               })}
             </div>
           </div>
@@ -378,7 +378,7 @@ export default function KnowledgeDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Share:</span>
+              <span className="text-sm text-white">Share:</span>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <Twitter className="h-4 w-4" />
               </Button>
@@ -419,7 +419,7 @@ export default function KnowledgeDetailPage() {
                 </Button>
               </CoffeeModal>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white">
               If you found this article helpful, consider buying the author a coffee to support their work.
             </p>
           </div>
@@ -441,16 +441,16 @@ export default function KnowledgeDetailPage() {
                       <CheckCircle2 className="h-4 w-4 text-primary" />
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">{article.author.title}</p>
-                  <p className="mt-2 text-sm text-foreground/80">{article.author.bio}</p>
+                  <p className="text-sm text-white">{article.author.title}</p>
+                  <p className="mt-2 text-sm text-white/80">{article.author.bio}</p>
                   <div className="mt-4 flex items-center justify-center sm:justify-start gap-4">
                     <div className="text-center">
                       <p className="font-semibold">{article.author.followers}</p>
-                      <p className="text-xs text-muted-foreground">Followers</p>
+                      <p className="text-xs text-white">Followers</p>
                     </div>
                     <div className="text-center">
                       <p className="font-semibold text-amber-500">{article.author.totalCoffees}</p>
-                      <p className="text-xs text-muted-foreground">Coffees</p>
+                      <p className="text-xs text-white">Coffees</p>
                     </div>
                   </div>
                   <div className="mt-4 flex flex-col sm:flex-row gap-2">
@@ -516,15 +516,15 @@ export default function KnowledgeDetailPage() {
                         {comment.author.isVerified && (
                           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         )}
-                        <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                        <span className="text-xs text-white">{comment.timestamp}</span>
                       </div>
-                      <p className="mt-2 text-sm text-foreground/80">{comment.content}</p>
+                      <p className="mt-2 text-sm text-white/80">{comment.content}</p>
                       <div className="mt-3 flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-muted-foreground hover:text-foreground">
+                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-white hover:text-white">
                           <ThumbsUp className="h-3.5 w-3.5" />
                           {comment.likes}
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-foreground">
+                        <Button variant="ghost" size="sm" className="h-8 text-white hover:text-white">
                           Reply
                         </Button>
                       </div>
@@ -546,7 +546,7 @@ export default function KnowledgeDetailPage() {
                       <h3 className="font-medium line-clamp-2 hover:text-primary transition-colors">
                         {related.title}
                       </h3>
-                      <p className="mt-2 text-sm text-muted-foreground">{related.author}</p>
+                      <p className="mt-2 text-sm text-white">{related.author}</p>
                       <div className="mt-3 flex items-center gap-1 text-sm text-amber-500">
                         <Coffee className="h-3.5 w-3.5" />
                         {related.coffeeCount}

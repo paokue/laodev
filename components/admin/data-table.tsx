@@ -107,7 +107,7 @@ export function DataTable<T extends { id: string }>({
       result.sort((a, b) => {
         const aValue = (a as Record<string, unknown>)[sortConfig.key]
         const bValue = (b as Record<string, unknown>)[sortConfig.key]
-        
+
         if (typeof aValue === "string" && typeof bValue === "string") {
           return sortConfig.direction === "asc"
             ? aValue.localeCompare(bValue)
@@ -150,7 +150,7 @@ export function DataTable<T extends { id: string }>({
       {/* Search and Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
           <Input
             placeholder={searchPlaceholder}
             value={searchQuery}
@@ -161,7 +161,7 @@ export function DataTable<T extends { id: string }>({
             className="pl-9"
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
           {filters.length > 0 && (
             <Button
@@ -223,7 +223,7 @@ export function DataTable<T extends { id: string }>({
       )}
 
       {/* Results count */}
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-white">
         Showing {startIndex + 1}-{Math.min(startIndex + pageSize, filteredData.length)} of {filteredData.length} results
       </div>
 
@@ -260,7 +260,7 @@ export function DataTable<T extends { id: string }>({
                 <TableRow>
                   <TableCell
                     colSpan={columns.length + (actions ? 1 : 0)}
-                    className="h-32 text-center text-muted-foreground"
+                    className="h-32 text-center text-white"
                   >
                     {emptyMessage}
                   </TableCell>
@@ -296,7 +296,7 @@ export function DataTable<T extends { id: string }>({
       <div className="grid gap-4 md:hidden">
         {paginatedData.length === 0 ? (
           <Card>
-            <CardContent className="flex h-32 items-center justify-center text-muted-foreground">
+            <CardContent className="flex h-32 items-center justify-center text-white">
               {emptyMessage}
             </CardContent>
           </Card>
@@ -314,13 +314,13 @@ export function DataTable<T extends { id: string }>({
                   <div className="space-y-2">
                     {columns.map((column) => (
                       <div key={column.key} className="flex items-start justify-between gap-4">
-                        <span className="text-sm text-muted-foreground">{column.label}</span>
+                        <span className="text-sm text-white">{column.label}</span>
                         <span className="text-sm font-medium text-right">
                           {column.mobileRender
                             ? column.mobileRender(item)
                             : column.render
-                            ? column.render(item)
-                            : String((item as Record<string, unknown>)[column.key] ?? "")}
+                              ? column.render(item)
+                              : String((item as Record<string, unknown>)[column.key] ?? "")}
                         </span>
                       </div>
                     ))}
@@ -341,7 +341,7 @@ export function DataTable<T extends { id: string }>({
       {totalPages > 1 && (
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Rows per page:</span>
+            <span className="text-sm text-white">Rows per page:</span>
             <Select
               value={String(pageSize)}
               onValueChange={() => setCurrentPage(1)}
@@ -376,7 +376,7 @@ export function DataTable<T extends { id: string }>({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            
+
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum: number
@@ -389,7 +389,7 @@ export function DataTable<T extends { id: string }>({
                 } else {
                   pageNum = currentPage - 2 + i
                 }
-                
+
                 return (
                   <Button
                     key={pageNum}

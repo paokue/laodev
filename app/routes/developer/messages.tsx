@@ -156,7 +156,7 @@ export default function DeveloperMessagesPage() {
               <div className="border-b border-border p-4">
                 <h2 className="text-lg font-semibold">Messages</h2>
                 <div className="relative mt-3">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                   <Input
                     placeholder="Search conversations..."
                     className="pl-9"
@@ -190,10 +190,10 @@ export default function DeveloperMessagesPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="font-medium truncate">{conv.name}</span>
-                        <span className="text-xs text-muted-foreground">{conv.time}</span>
+                        <span className="text-xs text-white">{conv.time}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{conv.type}</p>
-                      <p className="text-sm text-muted-foreground truncate mt-0.5">
+                      <p className="text-xs text-white">{conv.type}</p>
+                      <p className="text-sm text-white truncate mt-0.5">
                         {conv.lastMessage}
                       </p>
                     </div>
@@ -237,7 +237,7 @@ export default function DeveloperMessagesPage() {
                   </div>
                   <div>
                     <p className="font-medium">{selectedConversation.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-white">
                       {selectedConversation.isOnline ? (
                         <span className="text-emerald-400">Online</span>
                       ) : (
@@ -284,7 +284,7 @@ export default function DeveloperMessagesPage() {
                             "mt-1 flex items-center justify-end gap-1 text-[10px]",
                             message.senderId === "developer"
                               ? "text-primary-foreground/70"
-                              : "text-muted-foreground"
+                              : "text-white"
                           )}
                         >
                           <span>{message.time.split(", ")[1]}</span>

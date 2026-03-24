@@ -164,7 +164,7 @@ export default function DeveloperDashboardPage() {
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                   Welcome back, <span className="gradient-text">Somsak</span>
                 </h1>
-                <p className="mt-1 text-muted-foreground">
+                <p className="mt-1 text-white">
                   Here{"'"}s what{"'"}s happening with your consultations today.
                 </p>
               </div>
@@ -202,7 +202,7 @@ export default function DeveloperDashboardPage() {
                       )}
                       {stat.suffix}
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="mt-1 text-sm text-white">{stat.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -244,8 +244,8 @@ export default function DeveloperDashboardPage() {
                           </Avatar>
                           <div>
                             <p className="font-semibold">{booking.client}</p>
-                            <p className="text-sm text-muted-foreground">{booking.service}</p>
-                            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                            <p className="text-sm text-white">{booking.service}</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-white">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3.5 w-3.5" />
                                 {booking.date}
@@ -323,8 +323,8 @@ export default function DeveloperDashboardPage() {
                                   {request.client.split(" ").map((n) => n[0]).join("")}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="text-sm text-muted-foreground">{request.client}</span>
-                              <span className="text-xs text-muted-foreground">• {request.postedAt}</span>
+                              <span className="text-sm text-white">{request.client}</span>
+                              <span className="text-xs text-white">• {request.postedAt}</span>
                             </div>
                             <h4 className="mt-2 font-semibold">{request.title}</h4>
                             <div className="mt-2 flex flex-wrap gap-2">
@@ -399,8 +399,8 @@ export default function DeveloperDashboardPage() {
                             ))}
                           </div>
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">{review.comment}</p>
-                        <span className="mt-1 block text-xs text-muted-foreground">{review.date}</span>
+                        <p className="mt-1 text-sm text-white">{review.comment}</p>
+                        <span className="mt-1 block text-xs text-white">{review.date}</span>
                       </div>
                     ))}
                   </div>
@@ -418,12 +418,12 @@ export default function DeveloperDashboardPage() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Gross Earnings</span>
+                      <span className="text-white">Gross Earnings</span>
                       <span className="font-semibold">1,245 Kip</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Platform Fee (10%)</span>
-                      <span className="text-muted-foreground">-124.50 Kip</span>
+                      <span className="text-white">Platform Fee (10%)</span>
+                      <span className="text-white">-124.50 Kip</span>
                     </div>
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between">

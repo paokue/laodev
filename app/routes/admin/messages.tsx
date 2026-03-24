@@ -209,7 +209,7 @@ export default function AdminMessagesPage() {
         )
       case "resolved":
         return (
-          <Badge variant="outline" className="border-muted-foreground/50 bg-muted text-muted-foreground">
+          <Badge variant="outline" className="border-muted-foreground/50 bg-muted text-white">
             Resolved
           </Badge>
         )
@@ -238,10 +238,10 @@ export default function AdminMessagesPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium">{msg.sender}</span>
-              <ArrowRight className="h-3 w-3 text-muted-foreground" />
+              <ArrowRight className="h-3 w-3 text-white" />
               <span className="font-medium">{msg.receiver}</span>
             </div>
-            <p className="max-w-[300px] truncate text-sm text-muted-foreground">
+            <p className="max-w-[300px] truncate text-sm text-white">
               {msg.preview}
             </p>
           </div>
@@ -254,7 +254,7 @@ export default function AdminMessagesPage() {
       sortable: true,
       render: (msg) => (
         <div className="flex items-center gap-1">
-          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <MessageSquare className="h-4 w-4 text-white" />
           {msg.messageCount}
         </div>
       ),
@@ -272,7 +272,7 @@ export default function AdminMessagesPage() {
         msg.bookingId ? (
           <Badge variant="secondary">{msg.bookingId}</Badge>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-white">-</span>
         ),
     },
     {
@@ -280,7 +280,7 @@ export default function AdminMessagesPage() {
       label: "Last Activity",
       sortable: true,
       render: (msg) => (
-        <div className="flex items-center gap-1 text-muted-foreground">
+        <div className="flex items-center gap-1 text-white">
           <Clock className="h-4 w-4" />
           {msg.lastActivity}
         </div>
@@ -307,7 +307,7 @@ export default function AdminMessagesPage() {
             </div>
             <div>
               <p className="text-sm font-medium">{msg.sender}</p>
-              <p className="text-xs text-muted-foreground">to {msg.receiver}</p>
+              <p className="text-xs text-white">to {msg.receiver}</p>
             </div>
           </div>
           <DropdownMenu>
@@ -348,7 +348,7 @@ export default function AdminMessagesPage() {
           </DropdownMenu>
         </div>
 
-        <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+        <p className="mt-3 line-clamp-2 text-sm text-white">
           {msg.preview}
         </p>
 
@@ -357,7 +357,7 @@ export default function AdminMessagesPage() {
             {getStatusBadge(msg.status)}
             {msg.bookingId && <Badge variant="secondary">{msg.bookingId}</Badge>}
           </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-white">
             <div className="flex items-center gap-1">
               <MessageSquare className="h-4 w-4" />
               {msg.messageCount}
@@ -381,7 +381,7 @@ export default function AdminMessagesPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Messages</h1>
-        <p className="text-muted-foreground">Monitor and moderate platform conversations</p>
+        <p className="text-white">Monitor and moderate platform conversations</p>
       </div>
 
       {/* Quick Stats */}
@@ -393,7 +393,7 @@ export default function AdminMessagesPage() {
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Conversations</p>
+                <p className="text-sm text-white">Total Conversations</p>
                 <p className="text-2xl font-bold">{totalConversations}</p>
               </div>
             </div>
@@ -406,7 +406,7 @@ export default function AdminMessagesPage() {
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Active</p>
+                <p className="text-sm text-white">Active</p>
                 <p className="text-2xl font-bold">{activeCount}</p>
               </div>
             </div>
@@ -419,7 +419,7 @@ export default function AdminMessagesPage() {
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Flagged</p>
+                <p className="text-sm text-white">Flagged</p>
                 <p className="text-2xl font-bold">{flaggedCount}</p>
               </div>
             </div>
@@ -502,7 +502,7 @@ export default function AdminMessagesPage() {
                   </div>
                   <div>
                     <p className="font-medium">{selectedMessage.sender}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       to {selectedMessage.receiver}
                     </p>
                   </div>
@@ -519,7 +519,7 @@ export default function AdminMessagesPage() {
                   <p className="text-sm">{selectedMessage.fullMessage}</p>
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center justify-between text-sm text-white">
                   <div className="flex items-center gap-1">
                     <MessageSquare className="h-4 w-4" />
                     {selectedMessage.messageCount} messages

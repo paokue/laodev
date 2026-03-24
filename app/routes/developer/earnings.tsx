@@ -119,7 +119,7 @@ export default function DeveloperEarningsPage() {
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 My <span className="gradient-text">Earnings</span>
               </h1>
-              <p className="mt-1 text-muted-foreground">
+              <p className="mt-1 text-white">
                 Track your income and withdrawals
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function DeveloperEarningsPage() {
             <CardContent className="p-6 sm:p-8">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <p className="text-sm text-white flex items-center gap-2">
                     <Wallet className="h-4 w-4" />
                     Available Balance
                   </p>
@@ -160,7 +160,7 @@ export default function DeveloperEarningsPage() {
                   </Button>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Total Earned</p>
+                  <p className="text-sm text-white">Total Earned</p>
                   <p className="text-2xl font-bold">{totalEarnings.toFixed(2)} Kip</p>
                   <p className="text-sm text-emerald-400 flex items-center gap-1">
                     <ArrowUpRight className="h-4 w-4" />
@@ -168,16 +168,16 @@ export default function DeveloperEarningsPage() {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Platform Fees (10%)</p>
+                  <p className="text-sm text-white">Platform Fees (10%)</p>
                   <p className="text-2xl font-bold">{totalFees.toFixed(2)} Kip</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Net: {totalNet.toFixed(2)} Kip
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Withdrawn</p>
+                  <p className="text-sm text-white">Withdrawn</p>
                   <p className="text-2xl font-bold">{withdrawn.toFixed(2)} Kip</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     1 withdrawal this month
                   </p>
                 </div>
@@ -201,9 +201,8 @@ export default function DeveloperEarningsPage() {
                         className="flex flex-col gap-3 rounded-xl border border-border bg-card/50 p-4 transition-all hover:border-primary/30 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                            transaction.amount > 0 ? "bg-emerald-500/10" : "bg-blue-500/10"
-                          }`}>
+                          <div className={`flex h-10 w-10 items-center justify-center rounded-full ${transaction.amount > 0 ? "bg-emerald-500/10" : "bg-blue-500/10"
+                            }`}>
                             {transaction.amount > 0 ? (
                               <ArrowUpRight className="h-5 w-5 text-emerald-400" />
                             ) : (
@@ -212,19 +211,18 @@ export default function DeveloperEarningsPage() {
                           </div>
                           <div>
                             <p className="font-medium">{transaction.client}</p>
-                            <p className="text-sm text-muted-foreground">{transaction.service}</p>
-                            <p className="text-xs text-muted-foreground">{transaction.date}</p>
+                            <p className="text-sm text-white">{transaction.service}</p>
+                            <p className="text-xs text-white">{transaction.date}</p>
                           </div>
                         </div>
                         <div className="flex items-center justify-between sm:justify-end gap-4">
                           <div className="text-right">
-                            <p className={`font-semibold ${
-                              transaction.amount > 0 ? "text-emerald-400" : "text-blue-400"
-                            }`}>
+                            <p className={`font-semibold ${transaction.amount > 0 ? "text-emerald-400" : "text-blue-400"
+                              }`}>
                               {transaction.amount > 0 ? "+" : ""}{transaction.amount > 0 ? `${transaction.net.toFixed(2)} Kip` : `${transaction.amount.toFixed(2)} Kip`}
                             </p>
                             {transaction.amount > 0 && (
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-white">
                                 Fee: {transaction.fee.toFixed(2)} Kip
                               </p>
                             )}
@@ -266,7 +264,7 @@ export default function DeveloperEarningsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium">{method.type}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-white">
                             ****{method.last4}
                           </p>
                         </div>
@@ -318,7 +316,7 @@ export default function DeveloperEarningsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium">Tip: Increase Earnings</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-white">
                         Respond quickly to consultation requests to boost your acceptance rate and earnings.
                       </p>
                     </div>

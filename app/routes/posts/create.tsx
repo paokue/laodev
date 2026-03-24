@@ -92,7 +92,7 @@ export default function CreatePostPage() {
         <div className="mx-auto max-w-2xl px-4 py-4 lg:px-8">
           <Link
             to="/posts"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-white transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Posts
@@ -115,11 +115,10 @@ export default function CreatePostPage() {
                     {postTypes.map((type) => (
                       <label
                         key={type.value}
-                        className={`relative cursor-pointer rounded-lg border p-4 transition-colors ${
-                          selectedType === type.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        }`}
+                        className={`relative cursor-pointer rounded-lg border p-4 transition-colors ${selectedType === type.value
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
+                          }`}
                       >
                         <input
                           type="radio"
@@ -130,16 +129,15 @@ export default function CreatePostPage() {
                           className="sr-only"
                         />
                         <div className="flex items-start gap-3">
-                          <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                            selectedType === type.value ? "border-primary" : "border-muted-foreground/30"
-                          }`}>
+                          <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${selectedType === type.value ? "border-primary" : "border-muted-foreground/30"
+                            }`}>
                             {selectedType === type.value && (
                               <div className="h-2 w-2 rounded-full bg-primary" />
                             )}
                           </div>
                           <div>
                             <div className="font-medium">{type.label}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">{type.description}</div>
+                            <div className="mt-1 text-xs text-white">{type.description}</div>
                           </div>
                         </div>
                       </label>
@@ -212,7 +210,7 @@ export default function CreatePostPage() {
                           </button>
                         ))
                       ) : (
-                        <p className="px-4 py-2 text-sm text-muted-foreground">No skills found</p>
+                        <p className="px-4 py-2 text-sm text-white">No skills found</p>
                       )}
                     </div>
                   )}

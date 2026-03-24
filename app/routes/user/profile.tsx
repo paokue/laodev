@@ -338,7 +338,7 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               My <span className="gradient-text">Profile</span>
             </h1>
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 text-white">
               Manage your account settings
             </p>
           </div>
@@ -365,7 +365,7 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
                     />
                     <div className="text-center sm:text-left">
                       <h2 className="text-xl font-semibold">{user.name}</h2>
-                      <p className="text-muted-foreground">Member since {memberSince}</p>
+                      <p className="text-white">Member since {memberSince}</p>
                       <div className="mt-2 flex items-center justify-center gap-2 sm:justify-start">
                         {user.emailVerified && (
                           <span className="flex items-center gap-1 text-sm text-emerald-400">
@@ -458,7 +458,7 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Delete Account</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-white">
                         Permanently delete your account and all data
                       </p>
                     </div>
@@ -576,14 +576,14 @@ function ProfileForm({
           <div className="space-y-2">
             <Label htmlFor="name">Full Name <span className="text-rose-500">*</span></Label>
             <div className="relative">
-              <User className="absolute left-3 mt-1 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <User className="absolute left-3 mt-1 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input id="name" name="name" defaultValue={user.name} required className="pl-9" />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email <span className="text-rose-500">*</span></Label>
             <div className="relative">
-              <Mail className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Mail className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input id="email" name="email" type="email" className="pl-9" defaultValue={user.email} required />
             </div>
           </div>
@@ -594,14 +594,14 @@ function ProfileForm({
           <div className="space-y-2">
             <Label htmlFor="phone">Phone <span className="text-rose-500">*</span></Label>
             <div className="relative">
-              <Phone className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Phone className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input id="phone" name="phone" type="tel" className="pl-9" defaultValue={user.phone || ""} placeholder="+856 20 xxxx xxxx" />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="dob">Date of Birth <span className="text-rose-500">*</span></Label>
             <div className="relative">
-              <Calendar className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Calendar className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input id="dob" name="dob" type="date" className="pl-9" defaultValue={dobValue} />
             </div>
           </div>
@@ -642,7 +642,7 @@ function ProfileForm({
         <div className="space-y-2">
           <Label htmlFor="address">Address <span className="text-rose-500">*</span></Label>
           <div className="relative">
-            <MapPin className="absolute left-3 top-4 h-4 w-4 text-muted-foreground" />
+            <MapPin className="absolute left-3 top-4 h-4 w-4 text-white" />
             <Input id="address" name="address" className="pl-9" defaultValue={user.address || ""} placeholder="City, Country" />
           </div>
         </div>
@@ -658,14 +658,14 @@ function ProfileForm({
           <div className="space-y-2">
             <Label htmlFor="career">Career <span className="text-rose-500">*</span></Label>
             <div className="relative">
-              <Briefcase className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Briefcase className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input id="career" name="career" className="pl-9" defaultValue={user.career || ""} placeholder="e.g. Software Engineer" />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="education">Education <span className="text-rose-500">*</span></Label>
             <div className="relative">
-              <GraduationCap className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <GraduationCap className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input id="education" name="education" className="pl-9" defaultValue={user.education || ""} placeholder="e.g. BSc Computer Science" />
             </div>
           </div>
@@ -675,10 +675,10 @@ function ProfileForm({
         <div className="space-y-2">
           <Label htmlFor="interests">Interests <span className="text-rose-500">*</span></Label>
           <div className="relative">
-            <Heart className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Heart className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
             <Input id="interests" name="interests" className="pl-9" defaultValue={interestsValue} placeholder="e.g. React, TypeScript, DevOps (comma separated)" />
           </div>
-          <p className="text-xs text-muted-foreground">Separate multiple interests with commas</p>
+          <p className="text-xs text-white">Separate multiple interests with commas</p>
         </div>
       </div>
 
@@ -730,7 +730,7 @@ function PasswordInput({ id, name, label, placeholder = "********", minLength }:
         <button
           type="button"
           onClick={() => setShow(!show)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-white"
         >
           {show ? <EyeOff className="h-4 w-4 mt-1.5" /> : <Eye className="h-4 w-4 mt-1.5" />}
         </button>
@@ -819,7 +819,7 @@ function SettingToggle({ field, label, description, defaultValue }: {
     <div className="flex items-center justify-between">
       <div>
         <p className="font-medium">{label}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-sm text-white">{description}</p>
       </div>
       <Switch checked={checked} onCheckedChange={handleToggle} />
     </div>
@@ -973,7 +973,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
       case "REFUND":
         return <ArrowDownLeft className="h-4 w-4 text-blue-400" />
       default:
-        return <History className="h-4 w-4 text-muted-foreground" />
+        return <History className="h-4 w-4 text-white" />
     }
   }
 
@@ -998,7 +998,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
             <div>
               <CardDescription>Available Balance</CardDescription>
               <CardTitle className="text-3xl sm:text-4xl mt-1">
-                {balance.toLocaleString()} <span className="text-lg font-normal text-muted-foreground">Kip</span>
+                {balance.toLocaleString()} <span className="text-lg font-normal text-white">Kip</span>
               </CardTitle>
             </div>
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20">
@@ -1038,7 +1038,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                             onChange={(e) => { setTopUpAmount(e.target.value ? Number(e.target.value) : ""); setPickedQuickAmount(false) }}
                             className="pr-12"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white">
                             Kip
                           </span>
                         </div>
@@ -1046,7 +1046,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
 
                       {quickAmounts.length > 0 && (
                         <div>
-                          <label className="mb-3 block text-sm font-medium text-muted-foreground">Quick amounts</label>
+                          <label className="mb-3 block text-sm font-medium text-white">Quick amounts</label>
                           <div className="grid grid-cols-2 gap-2">
                             {quickAmounts.map((amount) => (
                               <button
@@ -1056,7 +1056,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                                 className={cn(
                                   "rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
                                   topUpAmount === amount
-                                    ? "border-primary bg-primary/10 text-foreground"
+                                    ? "border-primary bg-primary/10 text-white"
                                     : "border-border hover:border-primary/50"
                                 )}
                               >
@@ -1084,7 +1084,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                     <DialogHeader>
                       <DialogTitle>Pay via Bank Transfer</DialogTitle>
                       <DialogDescription>
-                        Scan or download the QR code and pay <span className="font-semibold text-foreground">{Number(topUpAmount).toLocaleString()} Kip</span> using your bank app
+                        Scan or download the QR code and pay <span className="font-semibold text-white">{Number(topUpAmount).toLocaleString()} Kip</span> using your bank app
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-5 pt-4">
@@ -1110,10 +1110,10 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                       {/* Instructions */}
                       <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm space-y-2">
                         <p className="font-medium">How to pay:</p>
-                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                        <ol className="list-decimal list-inside space-y-1 text-white">
                           <li>Download or screenshot the QR code above</li>
                           <li>Open your bank app (BCEL One, LDB, JDB, etc.)</li>
-                          <li>Scan the QR code and pay <span className="font-semibold text-foreground">{Number(topUpAmount).toLocaleString()} Kip</span></li>
+                          <li>Scan the QR code and pay <span className="font-semibold text-white">{Number(topUpAmount).toLocaleString()} Kip</span></li>
                           <li>Take a screenshot of your payment confirmation</li>
                           <li>Upload the payment slip in the next step</li>
                         </ol>
@@ -1137,13 +1137,13 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                     <DialogHeader>
                       <DialogTitle>Upload Payment Slip</DialogTitle>
                       <DialogDescription>
-                        Upload your payment confirmation for <span className="font-semibold text-foreground">{Number(topUpAmount).toLocaleString()} Kip</span>
+                        Upload your payment confirmation for <span className="font-semibold text-white">{Number(topUpAmount).toLocaleString()} Kip</span>
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-5 pt-4">
                       {/* Example Payment Slip */}
                       {!slipPreview && <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">Example payment slip:</p>
+                        <p className="text-sm font-medium text-white">Example payment slip:</p>
                         <button
                           type="button"
                           onClick={() => setShowExampleSlip(true)}
@@ -1184,7 +1184,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                             </div>
                             <div className="text-center">
                               <p className="font-medium">Click to upload payment slip</p>
-                              <p className="text-sm text-muted-foreground">JPG, PNG or WebP (max 10MB)</p>
+                              <p className="text-sm text-white">JPG, PNG or WebP (max 10MB)</p>
                             </div>
                             <input
                               type="file"
@@ -1199,7 +1199,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                       {/* Summary */}
                       <div className="rounded-lg border border-border bg-secondary/30 p-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Top-up amount</span>
+                          <span className="text-sm text-white">Top-up amount</span>
                           <span className="font-semibold">{Number(topUpAmount).toLocaleString()} Kip</span>
                         </div>
                       </div>
@@ -1267,11 +1267,11 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary">
-                      <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                      <ImageIcon className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <p className="font-medium">{req.amount.toLocaleString()} Kip</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-white">
                         {new Date(req.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </p>
                     </div>
@@ -1297,7 +1297,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
               </div>
               <div>
                 <p className="font-medium">Top up</p>
-                <p className="text-sm text-muted-foreground">Pay via QR code and upload slip</p>
+                <p className="text-sm text-white">Pay via QR code and upload slip</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -1306,7 +1306,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
               </div>
               <div>
                 <p className="font-medium">Book developers</p>
-                <p className="text-sm text-muted-foreground">Pay for consultations from your balance</p>
+                <p className="text-sm text-white">Pay for consultations from your balance</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -1315,7 +1315,7 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
               </div>
               <div>
                 <p className="font-medium">Give coffee</p>
-                <p className="text-sm text-muted-foreground">Tip developers with a coffee as thanks</p>
+                <p className="text-sm text-white">Tip developers with a coffee as thanks</p>
               </div>
             </div>
           </div>
@@ -1334,8 +1334,8 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
         <CardContent>
           {transactions.length === 0 ? (
             <div className="py-8 text-center">
-              <History className="mx-auto h-8 w-8 text-muted-foreground/50" />
-              <p className="mt-2 text-sm text-muted-foreground">No transactions yet</p>
+              <History className="mx-auto h-8 w-8 text-white/50" />
+              <p className="mt-2 text-sm text-white">No transactions yet</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -1350,12 +1350,12 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
                     </div>
                     <div>
                       <p className="font-medium">{tx.description}</p>
-                      <p className="text-sm text-muted-foreground">{new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                      <p className="text-sm text-white">{new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
                     </div>
                   </div>
                   <p className={cn(
                     "font-semibold",
-                    (tx.type === "TOP_UP" || tx.type === "REFUND") ? "text-emerald-400" : "text-foreground"
+                    (tx.type === "TOP_UP" || tx.type === "REFUND") ? "text-emerald-400" : "text-white"
                   )}>
                     {(tx.type === "TOP_UP" || tx.type === "REFUND") ? "+" : "-"}{tx.amount.toLocaleString()} Kip
                   </p>

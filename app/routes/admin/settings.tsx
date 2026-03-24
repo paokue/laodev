@@ -27,7 +27,7 @@ export default function AdminSettingsPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage platform settings and configurations</p>
+        <p className="text-white">Manage platform settings and configurations</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
@@ -110,7 +110,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="font-medium">Maintenance Mode</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Temporarily disable the platform for maintenance
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <p className="font-medium">New Developer Applications</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Get notified when a developer applies
                     </p>
                   </div>
@@ -147,7 +147,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <p className="font-medium">New Bookings</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Get notified for new consultation bookings
                     </p>
                   </div>
@@ -156,7 +156,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <p className="font-medium">Payment Alerts</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Receive alerts for payment issues
                     </p>
                   </div>
@@ -165,7 +165,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <p className="font-medium">Flagged Content</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Get notified when content is flagged
                     </p>
                   </div>
@@ -174,7 +174,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <p className="font-medium">Weekly Reports</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Receive weekly platform analytics reports
                     </p>
                   </div>
@@ -241,7 +241,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="font-medium">Auto Payouts</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Automatically process payouts on schedule
                   </p>
                 </div>
@@ -268,7 +268,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Require 2FA for admin accounts
                   </p>
                 </div>
@@ -277,7 +277,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="font-medium">Email Verification</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Require email verification for new accounts
                   </p>
                 </div>
@@ -286,7 +286,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="font-medium">Developer Verification</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Require admin approval for developer accounts
                   </p>
                 </div>
@@ -347,7 +347,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <p className="font-medium">Email Encryption (TLS)</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Use TLS encryption for email delivery
                   </p>
                 </div>

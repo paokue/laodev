@@ -206,7 +206,7 @@ export default function DeveloperProfilePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-4 lg:px-8">
           <Link
             to="/developers"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+            className="inline-flex items-center gap-2 text-sm text-white transition-colors hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Developers
@@ -243,11 +243,11 @@ export default function DeveloperProfilePage() {
                         Available
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="text-muted-foreground">Busy</Badge>
+                      <Badge variant="secondary" className="text-white">Busy</Badge>
                     )}
                   </div>
-                  <p className="mt-1 text-lg text-muted-foreground">{developer.title}</p>
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <p className="mt-1 text-lg text-white">{developer.title}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-white">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4 text-primary/60" />
                       <span>{developer.location}</span>
@@ -258,7 +258,7 @@ export default function DeveloperProfilePage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                      <span className="font-medium text-foreground">{developer.rating.toFixed(1)}</span>
+                      <span className="font-medium text-white">{developer.rating.toFixed(1)}</span>
                       <span>({developer.reviewCount} reviews)</span>
                     </div>
                   </div>
@@ -273,7 +273,7 @@ export default function DeveloperProfilePage() {
                       </Badge>
                     ))}
                     {developer.skills.length > 6 && (
-                      <Badge variant="outline" className="text-muted-foreground border-dashed">
+                      <Badge variant="outline" className="text-white border-dashed">
                         +{developer.skills.length - 6} more
                       </Badge>
                     )}
@@ -286,7 +286,7 @@ export default function DeveloperProfilePage() {
                   <div className="flex items-center gap-2 md:justify-end">
                     <Coffee className="h-5 w-5 text-amber-500" />
                     <span className="text-3xl font-bold text-primary">{developer.hourlyRate} Kip</span>
-                    <span className="text-muted-foreground">/coffee</span>
+                    <span className="text-white">/coffee</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -324,7 +324,7 @@ export default function DeveloperProfilePage() {
                       <CardTitle>About Me</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="leading-relaxed text-muted-foreground">
+                      <p className="leading-relaxed text-white">
                         {developer.bio}
                       </p>
 
@@ -375,8 +375,8 @@ export default function DeveloperProfilePage() {
                             <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-primary bg-background" />
                             <h4 className="font-semibold">{exp.role}</h4>
                             <p className="text-sm text-primary">{exp.company}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">{exp.period}</p>
-                            <p className="mt-2 text-sm text-muted-foreground">{exp.description}</p>
+                            <p className="mt-1 text-sm text-white">{exp.period}</p>
+                            <p className="mt-2 text-sm text-white">{exp.description}</p>
                           </div>
                         ))}
                       </div>
@@ -395,7 +395,7 @@ export default function DeveloperProfilePage() {
                         {developer.education.map((edu, index) => (
                           <div key={index}>
                             <h4 className="font-semibold">{edu.degree}</h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-white">
                               {edu.school} - {edu.year}
                             </p>
                           </div>
@@ -411,7 +411,7 @@ export default function DeveloperProfilePage() {
                       <CardTitle className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span>Reviews</span>
-                          <div className="flex items-center gap-1 text-sm font-normal text-muted-foreground">
+                          <div className="flex items-center gap-1 text-sm font-normal text-white">
                             <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                             {developer.rating.toFixed(1)} ({developer.reviewCount})
                           </div>
@@ -443,23 +443,22 @@ export default function DeveloperProfilePage() {
                                 </Avatar>
                                 <div>
                                   <p className="font-medium">{review.author}</p>
-                                  <p className="text-sm text-muted-foreground">{review.date}</p>
+                                  <p className="text-sm text-white">{review.date}</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-0.5">
                                 {Array.from({ length: 5 }).map((_, i) => (
                                   <Star
                                     key={i}
-                                    className={`h-4 w-4 ${
-                                      i < review.rating
-                                        ? "fill-yellow-500 text-yellow-500"
-                                        : "text-muted"
-                                    }`}
+                                    className={`h-4 w-4 ${i < review.rating
+                                      ? "fill-yellow-500 text-yellow-500"
+                                      : "text-muted"
+                                      }`}
                                   />
                                 ))}
                               </div>
                             </div>
-                            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                            <p className="mt-3 text-sm leading-relaxed text-white">
                               {review.content}
                             </p>
                           </div>
@@ -511,19 +510,19 @@ export default function DeveloperProfilePage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Projects Completed</span>
+                      <span className="text-sm text-white">Projects Completed</span>
                       <span className="font-semibold text-primary">{developer.completedProjects}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Response Time</span>
+                      <span className="text-sm text-white">Response Time</span>
                       <span className="font-semibold">~2 hours</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Success Rate</span>
+                      <span className="text-sm text-white">Success Rate</span>
                       <span className="font-semibold text-emerald-400">98%</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Languages</span>
+                      <span className="text-sm text-white">Languages</span>
                       <span className="font-semibold">{developer.languages.join(", ")}</span>
                     </div>
                   </div>

@@ -162,7 +162,7 @@ export default function PostsPage() {
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl animate-fade-in-up opacity-0 stagger-1">
                   Find Your Next <span className="gradient-text">Project</span>
                 </h1>
-                <p className="mt-3 max-w-2xl text-muted-foreground text-lg animate-fade-in-up opacity-0 stagger-2">
+                <p className="mt-3 max-w-2xl text-white text-lg animate-fade-in-up opacity-0 stagger-2">
                   Browse projects, mentorship opportunities, and consultation requests from users across Laos
                 </p>
               </div>
@@ -187,7 +187,7 @@ export default function PostsPage() {
                   </div>
                   <div>
                     <p className="text-xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="text-xs text-white">{stat.label}</p>
                   </div>
                 </div>
               ))}
@@ -200,7 +200,7 @@ export default function PostsPage() {
           <div className="mx-auto max-w-7xl px-4 py-4 lg:px-8">
             <div className="flex gap-4 flex-row lg:items-center lg:justify-between">
               <div className="relative flex-1 lg:max-w-md group">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white transition-colors group-focus-within:text-primary" />
                 <Input
                   placeholder="Search posts by title or description..."
                   value={searchQuery}
@@ -322,8 +322,8 @@ export default function PostsPage() {
         {/* Posts List */}
         <div className="mx-auto max-w-7xl px-4 py-2 sm:py-8 lg:px-8">
           <div className="mb-6 hidden sm:flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{filteredPosts.length}</span> post
+            <p className="text-sm text-white">
+              Showing <span className="font-medium text-white">{filteredPosts.length}</span> post
               {filteredPosts.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -333,11 +333,11 @@ export default function PostsPage() {
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse-glow" />
                 <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-card border border-border">
-                  <Search className="h-10 w-10 text-muted-foreground" />
+                  <Search className="h-10 w-10 text-white" />
                 </div>
               </div>
               <h3 className="mt-6 text-xl font-semibold">No posts found</h3>
-              <p className="mt-2 text-muted-foreground max-w-sm">
+              <p className="mt-2 text-white max-w-sm">
                 Try adjusting your search or filters to find what you&apos;re looking for
               </p>
               <Button
@@ -376,7 +376,7 @@ export default function PostsPage() {
                             {post.type === "consultation" && <MessageSquare className="mr-1 h-3 w-3" />}
                             {post.type}
                           </Badge>
-                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1 text-sm text-white">
                             <Clock className="h-3.5 w-3.5" />
                             {post.createdAt}
                           </span>
@@ -387,7 +387,7 @@ export default function PostsPage() {
                             {post.title}
                           </h3>
                         </Link>
-                        <p className="mt-2 line-clamp-2 text-muted-foreground">
+                        <p className="mt-2 line-clamp-2 text-white">
                           {post.description}
                         </p>
 
@@ -406,7 +406,7 @@ export default function PostsPage() {
                                 {post.author[0]}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-sm text-white">
                               {post.author}
                             </span>
                           </div>
@@ -416,7 +416,7 @@ export default function PostsPage() {
                               {post.budget}
                             </div>
                           }
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1 text-sm text-white">
                             <MessageSquare className="h-4 w-4" />
                             {post.responses} responses
                           </div>

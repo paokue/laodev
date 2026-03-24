@@ -72,7 +72,7 @@ export function DeveloperCard({
                 Available
               </Badge>
             ) : (
-              <Badge variant="secondary" className="absolute top-3 right-3 text-muted-foreground backdrop-blur-sm">
+              <Badge variant="secondary" className="absolute top-3 right-3 text-white backdrop-blur-sm">
                 Busy
               </Badge>
             )}
@@ -84,11 +84,11 @@ export function DeveloperCard({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="truncate text-lg font-semibold transition-colors group-hover:text-primary">{name}</h3>
-                  <p className="text-sm text-muted-foreground">{title}</p>
+                  <p className="text-sm text-white">{title}</p>
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-white">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5 text-primary/60" />
                   <span>{location}</span>
@@ -99,7 +99,7 @@ export function DeveloperCard({
                 </div>
                 <div className="flex items-center gap-1">
                   <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
-                  <span className="font-medium text-foreground">{rating.toFixed(1)}</span>
+                  <span className="font-medium text-white">{rating.toFixed(1)}</span>
                   <span>({reviewCount})</span>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export function DeveloperCard({
                   </Badge>
                 ))}
                 {skills.length > 6 && (
-                  <Badge variant="outline" className="text-muted-foreground border-dashed">
+                  <Badge variant="outline" className="text-white border-dashed">
                     +{skills.length - 6} more
                   </Badge>
                 )}
@@ -127,7 +127,7 @@ export function DeveloperCard({
               <div className="flex items-center gap-2">
                 <Coffee className="h-4 w-4 text-amber-500" />
                 <span className="text-primary font-medium">{hourlyRate} Kip</span>
-                <span className="text-sm text-muted-foreground">/coffee</span>
+                <span className="text-sm text-white">/coffee</span>
               </div>
               <div className="flex items-center gap-2">
                 <Link to={`/developers/${id}`}>
@@ -175,25 +175,25 @@ export function DeveloperCard({
             <div className="flex items-center gap-2">
               <h3 className="truncate text-lg font-semibold transition-colors group-hover:text-primary">{name}</h3>
             </div>
-            <p className="truncate text-sm text-muted-foreground">{title}</p>
+            <p className="truncate text-sm text-white">{title}</p>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1 transition-colors group-hover:text-foreground">
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white">
+          <div className="flex items-center gap-1 transition-colors group-hover:text-white">
             <MapPin className="h-4 w-4 text-primary/60" />
             <span>{location}</span>
           </div>
-          <div className="flex items-center gap-1 transition-colors group-hover:text-foreground">
+          <div className="flex items-center gap-1 transition-colors group-hover:text-white">
             <Clock className="h-4 w-4 text-primary/60" />
             <span>{yearsExperience}+ years</span>
           </div>
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-            <span className="font-medium text-foreground">
+            <span className="font-medium text-white">
               {rating.toFixed(1)}
             </span>
-            <span className="text-muted-foreground">({reviewCount})</span>
+            <span className="text-white">({reviewCount})</span>
           </div>
         </div>
 
@@ -209,7 +209,7 @@ export function DeveloperCard({
             </Badge>
           ))}
           {skills.length > 4 && (
-            <Badge variant="outline" className="text-muted-foreground border-dashed">
+            <Badge variant="outline" className="text-white border-dashed">
               +{skills.length - 4} more
             </Badge>
           )}
@@ -219,7 +219,7 @@ export function DeveloperCard({
           <div className="flex items-center gap-2">
             <Coffee className="h-5 w-5 text-amber-500" />
             <span className="text-md text-primary">{hourlyRate} Kip</span>
-            <span className="text-sm text-muted-foreground">/coffee</span>
+            <span className="text-sm text-white">/coffee</span>
           </div>
           <div className="flex items-center gap-2">
             {isAvailable ? (
@@ -231,7 +231,7 @@ export function DeveloperCard({
                 Available
               </Badge>
             ) : (
-              <Badge variant="secondary" className="text-muted-foreground">
+              <Badge variant="secondary" className="text-white">
                 Busy
               </Badge>
             )}

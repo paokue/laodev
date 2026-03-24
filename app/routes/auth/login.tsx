@@ -83,7 +83,7 @@ export default function LoginPage() {
             <span className="text-xl font-semibold tracking-tight">LaoDev</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-muted-foreground sm:inline">
+            <span className="hidden text-sm text-white sm:inline">
               {"Don't"} have an account?
             </span>
             <Link to="/register/user">
@@ -111,7 +111,7 @@ export default function LoginPage() {
                   Email Address <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                   <Input
                     id="email"
                     name="email"
@@ -133,7 +133,7 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                   <Input
                     id="password"
                     name="password"
@@ -145,7 +145,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-white"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -174,7 +174,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">New to LaoDev?</span>
+                <span className="bg-card px-2 text-white">New to LaoDev?</span>
               </div>
             </div>
 

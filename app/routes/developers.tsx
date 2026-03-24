@@ -266,7 +266,7 @@ export default function DevelopersPage() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl animate-fade-in-up opacity-0 stagger-1">
               Browse <span className="gradient-text">Developers</span>
             </h1>
-            <p className="mt-3 max-w-2xl text-muted-foreground text-lg animate-fade-in-up opacity-0 stagger-2">
+            <p className="mt-3 max-w-2xl text-white text-lg animate-fade-in-up opacity-0 stagger-2">
               Find the perfect developer for your project from our verified community of experts across Laos
             </p>
           </div>
@@ -277,7 +277,7 @@ export default function DevelopersPage() {
           <div className="mx-auto max-w-7xl px-4 py-4 lg:px-8">
             <div className="flex  gap-4 flex-row lg:items-center lg:justify-between">
               <div className="relative flex-1 lg:max-w-md group">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white transition-colors group-focus-within:text-primary" />
                 <Input
                   placeholder="Search by name, skills, or title..."
                   value={searchQuery}
@@ -399,8 +399,8 @@ export default function DevelopersPage() {
         {/* Results */}
         <div className="mx-auto max-w-7xl px-4 py-0 sm:py-8 lg:px-8">
           <div className="mb-6 flex items-center justify-between">
-            <p className="hidden sm:block text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{filteredDevelopers.length}</span> developer
+            <p className="hidden sm:block text-sm text-white">
+              Showing <span className="font-medium text-white">{filteredDevelopers.length}</span> developer
               {filteredDevelopers.length !== 1 ? "s" : ""}
             </p>
             <div className="hidden items-center gap-1 rounded-lg border border-border p-1 md:flex">
@@ -410,7 +410,7 @@ export default function DevelopersPage() {
                   "flex h-8 w-8 items-center justify-center rounded-md transition-all",
                   viewMode === "list"
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    : "text-white hover:text-white hover:bg-secondary"
                 )}
               >
                 <List className="h-4 w-4" />
@@ -421,7 +421,7 @@ export default function DevelopersPage() {
                   "flex h-8 w-8 items-center justify-center rounded-md transition-all",
                   viewMode === "grid"
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    : "text-white hover:text-white hover:bg-secondary"
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -466,11 +466,11 @@ export default function DevelopersPage() {
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse-glow" />
                 <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-card border border-border">
-                  <Search className="h-10 w-10 text-muted-foreground" />
+                  <Search className="h-10 w-10 text-white" />
                 </div>
               </div>
               <h3 className="mt-6 text-xl font-semibold">No developers found</h3>
-              <p className="mt-2 text-muted-foreground max-w-sm">
+              <p className="mt-2 text-white max-w-sm">
                 Try adjusting your search or filters to find what you&apos;re looking for
               </p>
               <Button

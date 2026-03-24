@@ -215,7 +215,7 @@ export default function AdminUsersPage() {
           </Avatar>
           <div>
             <p className="font-medium">{user.name}</p>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+            <p className="text-sm text-white">{user.email}</p>
           </div>
         </div>
       ),
@@ -241,8 +241,8 @@ export default function AdminUsersPage() {
             user.status === "active"
               ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
               : user.status === "suspended"
-              ? "border-destructive/50 bg-destructive/10 text-destructive"
-              : "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
+                ? "border-destructive/50 bg-destructive/10 text-destructive"
+                : "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
           }
         >
           {user.status}
@@ -254,7 +254,7 @@ export default function AdminUsersPage() {
       label: "Location",
       sortable: true,
       render: (user) => (
-        <div className="flex items-center gap-1 text-muted-foreground">
+        <div className="flex items-center gap-1 text-white">
           <MapPin className="h-4 w-4" />
           {user.location}
         </div>
@@ -278,7 +278,7 @@ export default function AdminUsersPage() {
       key: "lastActive",
       label: "Last Active",
       render: (user) => (
-        <span className="text-muted-foreground">{user.lastActive}</span>
+        <span className="text-white">{user.lastActive}</span>
       ),
     },
   ]
@@ -295,7 +295,7 @@ export default function AdminUsersPage() {
             </Avatar>
             <div>
               <p className="font-medium">{user.name}</p>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
+              <p className="text-sm text-white">{user.email}</p>
             </div>
           </div>
           <DropdownMenu>
@@ -348,8 +348,8 @@ export default function AdminUsersPage() {
               user.status === "active"
                 ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
                 : user.status === "suspended"
-                ? "border-destructive/50 bg-destructive/10 text-destructive"
-                : "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
+                  ? "border-destructive/50 bg-destructive/10 text-destructive"
+                  : "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
             }
           >
             {user.status}
@@ -357,19 +357,19 @@ export default function AdminUsersPage() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-muted-foreground">Location</p>
+            <p className="text-white">Location</p>
             <p className="font-medium">{user.location}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Bookings</p>
+            <p className="text-white">Bookings</p>
             <p className="font-medium">{user.bookings}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Total Spent</p>
+            <p className="text-white">Total Spent</p>
             <p className="font-medium">{user.spent} Kip</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Last Active</p>
+            <p className="text-white">Last Active</p>
             <p className="font-medium">{user.lastActive}</p>
           </div>
         </div>
@@ -381,7 +381,7 @@ export default function AdminUsersPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-        <p className="text-muted-foreground">Manage all users and developers</p>
+        <p className="text-white">Manage all users and developers</p>
       </div>
 
       <DataTable
@@ -453,7 +453,7 @@ export default function AdminUsersPage() {
                   </Avatar>
                   <div>
                     <h3 className="text-xl font-semibold">{selectedUser.name}</h3>
-                    <p className="text-muted-foreground">{selectedUser.email}</p>
+                    <p className="text-white">{selectedUser.email}</p>
                     <div className="mt-2 flex gap-2">
                       <Badge variant={selectedUser.type === "developer" ? "default" : "secondary"}>
                         {selectedUser.type === "developer" ? "Developer" : "User"}
@@ -464,8 +464,8 @@ export default function AdminUsersPage() {
                           selectedUser.status === "active"
                             ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
                             : selectedUser.status === "suspended"
-                            ? "border-destructive/50 bg-destructive/10 text-destructive"
-                            : "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
+                              ? "border-destructive/50 bg-destructive/10 text-destructive"
+                              : "border-yellow-500/50 bg-yellow-500/10 text-yellow-500"
                         }
                       >
                         {selectedUser.status}
@@ -475,21 +475,21 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <MapPin className="h-4 w-4 text-white" />
                     <span>{selectedUser.location}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 text-white" />
                     <span>Joined {selectedUser.joinedAt}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 rounded-lg bg-muted/50 p-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Bookings</p>
+                    <p className="text-sm text-white">Total Bookings</p>
                     <p className="text-2xl font-bold">{selectedUser.bookings}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Spent</p>
+                    <p className="text-sm text-white">Total Spent</p>
                     <p className="text-2xl font-bold">{selectedUser.spent} Kip</p>
                   </div>
                 </div>

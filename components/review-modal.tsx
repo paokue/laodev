@@ -101,7 +101,7 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
             <div className="py-6">
               {/* Overall Rating */}
               <div className="text-center">
-                <p className="mb-4 text-sm text-muted-foreground">Overall Rating</p>
+                <p className="mb-4 text-sm text-white">Overall Rating</p>
                 <div className="flex justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <button
@@ -113,11 +113,10 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                       onClick={() => setOverallRating(rating)}
                     >
                       <Star
-                        className={`h-10 w-10 transition-colors ${
-                          rating <= (hoveredRating || overallRating)
+                        className={`h-10 w-10 transition-colors ${rating <= (hoveredRating || overallRating)
                             ? "fill-yellow-500 text-yellow-500"
-                            : "text-muted-foreground/30"
-                        }`}
+                            : "text-white/30"
+                          }`}
                       />
                     </button>
                   ))}
@@ -136,7 +135,7 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                       key={category.id}
                       className="flex items-center justify-between gap-4"
                     >
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-white">
                         {category.label}
                       </span>
                       <div className="flex gap-1">
@@ -148,11 +147,10 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                             onClick={() => handleCategoryRating(category.id, rating)}
                           >
                             <Star
-                              className={`h-5 w-5 transition-colors ${
-                                rating <= categoryRatings[category.id]
+                              className={`h-5 w-5 transition-colors ${rating <= categoryRatings[category.id]
                                   ? "fill-yellow-500 text-yellow-500"
-                                  : "text-muted-foreground/30"
-                              }`}
+                                  : "text-white/30"
+                                }`}
                             />
                           </button>
                         ))}
@@ -192,11 +190,10 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <Star
                     key={rating}
-                    className={`h-5 w-5 ${
-                      rating <= overallRating
+                    className={`h-5 w-5 ${rating <= overallRating
                         ? "fill-yellow-500 text-yellow-500"
-                        : "text-muted-foreground/30"
-                    }`}
+                        : "text-white/30"
+                      }`}
                   />
                 ))}
                 <span className="ml-2 text-sm font-medium">
@@ -213,7 +210,7 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                   placeholder="Summarize your experience"
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   maxLength={100}
                 />
               </div>
@@ -229,7 +226,7 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                   className="min-h-[150px] resize-none"
                   maxLength={2000}
                 />
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-xs text-white">
                   <span>
                     {reviewContent.length < 20
                       ? `Minimum 20 characters required (${20 - reviewContent.length} more)`
@@ -242,7 +239,7 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
               {/* Tips */}
               <div className="rounded-lg border border-border bg-card/50 p-4">
                 <p className="text-sm font-medium">Tips for a helpful review:</p>
-                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                <ul className="mt-2 space-y-1 text-xs text-white">
                   <li>Be specific about what the developer helped you with</li>
                   <li>Mention the quality of communication and responsiveness</li>
                   <li>Share whether the consultation met your expectations</li>
@@ -283,11 +280,10 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
               {[1, 2, 3, 4, 5].map((rating) => (
                 <Star
                   key={rating}
-                  className={`h-6 w-6 ${
-                    rating <= overallRating
+                  className={`h-6 w-6 ${rating <= overallRating
                       ? "fill-yellow-500 text-yellow-500"
-                      : "text-muted-foreground/30"
-                  }`}
+                      : "text-white/30"
+                    }`}
                 />
               ))}
             </div>

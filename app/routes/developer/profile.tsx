@@ -76,7 +76,7 @@ export default function DeveloperProfilePage() {
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               My <span className="gradient-text">Profile</span>
             </h1>
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 text-white">
               Manage your public profile and services
             </p>
           </div>
@@ -109,12 +109,12 @@ export default function DeveloperProfilePage() {
                     </div>
                     <div className="text-center sm:text-left">
                       <h2 className="text-xl font-semibold">Somsak Phommavong</h2>
-                      <p className="text-muted-foreground">Senior Full-Stack Developer</p>
+                      <p className="text-white">Senior Full-Stack Developer</p>
                       <div className="mt-2 flex items-center justify-center gap-4 sm:justify-start">
                         <div className="flex items-center gap-1 text-yellow-400">
                           <Star className="h-4 w-4 fill-current" />
                           <span className="font-medium">4.9</span>
-                          <span className="text-muted-foreground">(47 reviews)</span>
+                          <span className="text-white">(47 reviews)</span>
                         </div>
                         <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                           <Shield className="mr-1 h-3 w-3" />
@@ -144,14 +144,14 @@ export default function DeveloperProfilePage() {
                     <div className="space-y-2">
                       <Label>Location</Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                         <Input className="pl-9" defaultValue="Vientiane, Laos" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label>Years of Experience</Label>
                       <div className="relative">
-                        <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                         <Input className="pl-9" type="number" defaultValue="8" />
                       </div>
                     </div>
@@ -260,10 +260,10 @@ export default function DeveloperProfilePage() {
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <h4 className="font-semibold">{service.name}</h4>
-                          <p className="text-sm text-muted-foreground">{service.description}</p>
+                          <p className="text-sm text-white">{service.description}</p>
                           <div className="mt-2 flex items-center gap-3 text-sm">
                             <span className="font-medium text-primary">{service.price} Kip</span>
-                            <span className="text-muted-foreground">{service.duration}</span>
+                            <span className="text-white">{service.duration}</span>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -287,7 +287,7 @@ export default function DeveloperProfilePage() {
                 <CardContent>
                   <div className="flex items-center gap-2">
                     <Input type="number" defaultValue="45" className="w-24" />
-                    <span className="text-muted-foreground">Kip per hour</span>
+                    <span className="text-white">Kip per hour</span>
                   </div>
                 </CardContent>
               </Card>
@@ -305,7 +305,7 @@ export default function DeveloperProfilePage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Available for Bookings</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-white">
                         {isAvailable
                           ? "Your profile is visible and clients can book sessions"
                           : "Your profile is hidden from search results"}
@@ -334,7 +334,7 @@ export default function DeveloperProfilePage() {
                     <div key={i} className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">{item.label}</p>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <p className="text-sm text-white">{item.description}</p>
                       </div>
                       <Switch defaultChecked={item.enabled} />
                     </div>
@@ -347,7 +347,7 @@ export default function DeveloperProfilePage() {
                 <CardContent className="flex items-center justify-between p-4">
                   <div>
                     <p className="font-medium">Preview Your Profile</p>
-                    <p className="text-sm text-muted-foreground">See how clients view your profile</p>
+                    <p className="text-sm text-white">See how clients view your profile</p>
                   </div>
                   <Button variant="outline" className="gap-2">
                     <ExternalLink className="h-4 w-4" />

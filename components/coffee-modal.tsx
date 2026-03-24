@@ -67,10 +67,10 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
     .join("")
     .toUpperCase()
 
-  const totalAmount = selectedAmount 
-    ? selectedAmount * coffeePrice 
-    : customAmount 
-      ? parseFloat(customAmount) 
+  const totalAmount = selectedAmount
+    ? selectedAmount * coffeePrice
+    : customAmount
+      ? parseFloat(customAmount)
       : 0
 
   const coffeeCount = selectedAmount || (customAmount ? Math.floor(parseFloat(customAmount) / coffeePrice) : 0)
@@ -115,52 +115,52 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
             {/* QR Code pattern simulation */}
             <rect fill="#000" width="100" height="100" />
             <rect fill="#fff" x="5" y="5" width="90" height="90" />
-            
+
             {/* Corner squares */}
             <rect fill="#000" x="10" y="10" width="25" height="25" />
             <rect fill="#fff" x="13" y="13" width="19" height="19" />
             <rect fill="#000" x="16" y="16" width="13" height="13" />
-            
+
             <rect fill="#000" x="65" y="10" width="25" height="25" />
             <rect fill="#fff" x="68" y="13" width="19" height="19" />
             <rect fill="#000" x="71" y="16" width="13" height="13" />
-            
+
             <rect fill="#000" x="10" y="65" width="25" height="25" />
             <rect fill="#fff" x="13" y="68" width="19" height="19" />
             <rect fill="#000" x="16" y="71" width="13" height="13" />
-            
+
             {/* Random pattern */}
             <rect fill="#000" x="40" y="10" width="5" height="5" />
             <rect fill="#000" x="50" y="15" width="5" height="5" />
             <rect fill="#000" x="45" y="20" width="5" height="5" />
             <rect fill="#000" x="40" y="25" width="5" height="5" />
             <rect fill="#000" x="50" y="30" width="5" height="5" />
-            
+
             <rect fill="#000" x="10" y="40" width="5" height="5" />
             <rect fill="#000" x="20" y="45" width="5" height="5" />
             <rect fill="#000" x="15" y="50" width="5" height="5" />
             <rect fill="#000" x="25" y="55" width="5" height="5" />
-            
+
             <rect fill="#000" x="40" y="40" width="20" height="20" />
             <rect fill="#fff" x="43" y="43" width="14" height="14" />
             <rect fill="#000" x="46" y="46" width="8" height="8" />
-            
+
             <rect fill="#000" x="65" y="45" width="5" height="5" />
             <rect fill="#000" x="75" y="40" width="5" height="5" />
             <rect fill="#000" x="70" y="55" width="5" height="5" />
             <rect fill="#000" x="80" y="50" width="5" height="5" />
-            
+
             <rect fill="#000" x="40" y="70" width="5" height="5" />
             <rect fill="#000" x="50" y="75" width="5" height="5" />
             <rect fill="#000" x="45" y="80" width="5" height="5" />
             <rect fill="#000" x="55" y="85" width="5" height="5" />
-            
+
             <rect fill="#000" x="65" y="70" width="5" height="5" />
             <rect fill="#000" x="75" y="75" width="5" height="5" />
             <rect fill="#000" x="70" y="80" width="5" height="5" />
             <rect fill="#000" x="80" y="85" width="5" height="5" />
           </svg>
-          
+
           {/* Coffee icon overlay */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="bg-amber-500 rounded-lg p-2">
@@ -168,7 +168,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
             </div>
           </div>
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-3">
+        <p className="text-center text-sm text-white mt-3">
           Scan with your banking app to pay
         </p>
       </div>
@@ -206,9 +206,9 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                     <CheckCircle2 className="h-5 w-5 text-primary" />
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{writer.title}</p>
+                <p className="text-sm text-white">{writer.title}</p>
                 {writer.location && (
-                  <div className="flex items-center justify-center gap-1 mt-1 text-xs text-muted-foreground">
+                  <div className="flex items-center justify-center gap-1 mt-1 text-xs text-white">
                     <MapPin className="h-3 w-3" />
                     {writer.location}
                   </div>
@@ -221,7 +221,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                 )}
               </div>
               {writer.bio && (
-                <p className="mt-3 text-sm text-muted-foreground text-center max-w-sm">
+                <p className="mt-3 text-sm text-white text-center max-w-sm">
                   {writer.bio}
                 </p>
               )}
@@ -238,11 +238,10 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                       setSelectedAmount(amount)
                       setCustomAmount("")
                     }}
-                    className={`flex flex-col items-center p-3 rounded-xl border transition-all ${
-                      selectedAmount === amount
+                    className={`flex flex-col items-center p-3 rounded-xl border transition-all ${selectedAmount === amount
                         ? "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500"
                         : "border-border hover:border-amber-500/50 hover:bg-card"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-0.5 mb-1">
                       {Array(Math.min(amount, 3))
@@ -250,9 +249,8 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                         .map((_, i) => (
                           <Coffee
                             key={i}
-                            className={`h-4 w-4 ${
-                              selectedAmount === amount ? "text-amber-500" : "text-muted-foreground"
-                            }`}
+                            className={`h-4 w-4 ${selectedAmount === amount ? "text-amber-500" : "text-white"
+                              }`}
                           />
                         ))}
                       {amount > 3 && (
@@ -266,9 +264,9 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
 
               {/* Custom Amount */}
               <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Or enter custom amount</Label>
+                <Label className="text-sm text-white">Or enter custom amount</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white">
                     $
                   </span>
                   <Input
@@ -287,7 +285,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
 
               {/* Message */}
               <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">
+                <Label className="text-sm text-white">
                   Leave a message (optional)
                 </Label>
                 <Textarea
@@ -333,7 +331,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                 </Avatar>
                 <div>
                   <p className="font-medium text-sm">{writer.name}</p>
-                  <p className="text-xs text-muted-foreground">{coffeeCount} coffee{coffeeCount > 1 ? "s" : ""}</p>
+                  <p className="text-xs text-white">{coffeeCount} coffee{coffeeCount > 1 ? "s" : ""}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -346,35 +344,32 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setPaymentMethod("qr")}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
-                    paymentMethod === "qr"
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${paymentMethod === "qr"
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/50"
-                  }`}
+                    }`}
                 >
-                  <QrCode className={`h-5 w-5 ${paymentMethod === "qr" ? "text-primary" : "text-muted-foreground"}`} />
+                  <QrCode className={`h-5 w-5 ${paymentMethod === "qr" ? "text-primary" : "text-white"}`} />
                   <span className="text-xs font-medium">QR Code</span>
                 </button>
                 <button
                   onClick={() => setPaymentMethod("wallet")}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
-                    paymentMethod === "wallet"
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${paymentMethod === "wallet"
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/50"
-                  }`}
+                    }`}
                 >
-                  <Smartphone className={`h-5 w-5 ${paymentMethod === "wallet" ? "text-primary" : "text-muted-foreground"}`} />
+                  <Smartphone className={`h-5 w-5 ${paymentMethod === "wallet" ? "text-primary" : "text-white"}`} />
                   <span className="text-xs font-medium">E-Wallet</span>
                 </button>
                 <button
                   onClick={() => setPaymentMethod("card")}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
-                    paymentMethod === "card"
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${paymentMethod === "card"
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/50"
-                  }`}
+                    }`}
                 >
-                  <CreditCard className={`h-5 w-5 ${paymentMethod === "card" ? "text-primary" : "text-muted-foreground"}`} />
+                  <CreditCard className={`h-5 w-5 ${paymentMethod === "card" ? "text-primary" : "text-white"}`} />
                   <span className="text-xs font-medium">Card</span>
                 </button>
               </div>
@@ -383,17 +378,17 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               {paymentMethod === "qr" && (
                 <div className="p-4 rounded-xl border border-border bg-card/50 space-y-4">
                   {generateQRCode()}
-                  
+
                   {writer.bankInfo && (
                     <div className="space-y-2 pt-4 border-t border-border">
                       <p className="text-sm font-medium text-center">Bank Transfer Details</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between p-2 rounded-lg bg-background">
-                          <span className="text-muted-foreground">Bank</span>
+                          <span className="text-white">Bank</span>
                           <span className="font-medium">{writer.bankInfo.bankName}</span>
                         </div>
                         <div className="flex justify-between items-center p-2 rounded-lg bg-background">
-                          <span className="text-muted-foreground">Account No.</span>
+                          <span className="text-white">Account No.</span>
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-medium">{writer.bankInfo.accountNumber}</span>
                             <Button
@@ -407,7 +402,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                           </div>
                         </div>
                         <div className="flex justify-between p-2 rounded-lg bg-background">
-                          <span className="text-muted-foreground">Name</span>
+                          <span className="text-white">Name</span>
                           <span className="font-medium">{writer.bankInfo.accountName}</span>
                         </div>
                       </div>
@@ -419,7 +414,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               {/* E-Wallet */}
               {paymentMethod === "wallet" && (
                 <div className="p-4 rounded-xl border border-border bg-card/50 space-y-3">
-                  <p className="text-sm text-center text-muted-foreground">
+                  <p className="text-sm text-center text-white">
                     Send to wallet address:
                   </p>
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-background">
@@ -509,13 +504,13 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                 <Heart className="h-4 w-4 text-primary-foreground fill-current" />
               </div>
             </div>
-            
+
             <h3 className="mt-6 text-xl font-semibold flex items-center gap-2">
               Thank You!
               <Sparkles className="h-5 w-5 text-amber-500" />
             </h3>
-            
-            <p className="mt-2 text-center text-muted-foreground">
+
+            <p className="mt-2 text-center text-white">
               You just bought {coffeeCount} coffee{coffeeCount > 1 ? "s" : ""} for {writer.name.split(" ")[0]}!
             </p>
 
@@ -534,7 +529,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               </Avatar>
               <div className="text-sm">
                 <p className="font-medium">{writer.name}</p>
-                <p className="text-muted-foreground">will be notified</p>
+                <p className="text-white">will be notified</p>
               </div>
             </div>
 

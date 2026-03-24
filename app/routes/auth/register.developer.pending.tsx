@@ -38,7 +38,7 @@ export default function PendingApprovalPage() {
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                   <div>
                     <p className="font-medium">Email Verified</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Your email has been successfully verified
                     </p>
                   </div>
@@ -47,16 +47,16 @@ export default function PendingApprovalPage() {
                   <Clock className="mt-0.5 h-5 w-5 shrink-0 text-yellow-500" />
                   <div>
                     <p className="font-medium">Admin Review</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Our team will review your profile within 24-48 hours
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-white" />
                   <div>
                     <p className="font-medium">Get Notified</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       {"You'll"} receive an email once your profile is approved
                     </p>
                   </div>
@@ -78,7 +78,7 @@ export default function PendingApprovalPage() {
               </Link>
             </div>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-white">
               Have questions? Contact us at{" "}
               <a href="mailto:support@laodev.la" className="text-primary hover:underline">
                 support@laodev.la

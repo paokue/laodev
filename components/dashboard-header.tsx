@@ -102,7 +102,7 @@ export function DashboardHeader({ userType, userName }: DashboardHeaderProps) {
                 to={link.href}
                 className={cn(
                   "relative px-4 py-2 text-sm transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  isActive ? "text-primary" : "text-white hover:text-white"
                 )}
               >
                 {link.label}
@@ -144,14 +144,14 @@ export function DashboardHeader({ userType, userName }: DashboardHeaderProps) {
                     {userType === "developer" ? "Developer" : "User"}
                   </Badge>
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-white" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 border-border bg-card/95 backdrop-blur-xl">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">{userName}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white">
                     {userType === "developer" ? "Developer Account" : "User Account"}
                   </p>
                 </div>
@@ -199,7 +199,7 @@ export function DashboardHeader({ userType, userName }: DashboardHeaderProps) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">{userName}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white">
                     {userType === "developer" ? "Developer Account" : "User Account"}
                   </p>
                 </div>

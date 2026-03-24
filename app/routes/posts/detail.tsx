@@ -598,7 +598,7 @@ export default function PostDetailPage() {
           <div className="mx-auto max-w-7xl px-4 py-4 lg:px-8">
             <Link
               to="/posts"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-white hover:text-white transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Posts
@@ -637,7 +637,7 @@ export default function PostDetailPage() {
                   {post.title}
                 </h1>
 
-                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-white">
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     Asked {post.createdAt}
@@ -657,27 +657,27 @@ export default function PostDetailPage() {
               <Card className="overflow-hidden">
                 <CardContent className="p-6">
                   <div className="prose prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    <div className="whitespace-pre-wrap text-white/90 leading-relaxed">
                       {post.content.split('\n').map((line, i) => {
                         if (line.startsWith('## ')) {
-                          return <h2 key={i} className="text-xl font-semibold mt-6 mb-3 text-foreground">{line.replace('## ', '')}</h2>
+                          return <h2 key={i} className="text-xl font-semibold mt-6 mb-3 text-white">{line.replace('## ', '')}</h2>
                         }
                         if (line.startsWith('### ')) {
-                          return <h3 key={i} className="text-lg font-semibold mt-4 mb-2 text-foreground">{line.replace('### ', '')}</h3>
+                          return <h3 key={i} className="text-lg font-semibold mt-4 mb-2 text-white">{line.replace('### ', '')}</h3>
                         }
                         if (line.startsWith('- ')) {
-                          return <li key={i} className="ml-4 text-muted-foreground">{line.replace('- ', '')}</li>
+                          return <li key={i} className="ml-4 text-white">{line.replace('- ', '')}</li>
                         }
                         if (line.match(/^\d+\./)) {
-                          return <li key={i} className="ml-4 text-muted-foreground list-decimal">{line.replace(/^\d+\.\s*/, '')}</li>
+                          return <li key={i} className="ml-4 text-white list-decimal">{line.replace(/^\d+\.\s*/, '')}</li>
                         }
                         if (line.startsWith('**') && line.endsWith('**')) {
-                          return <p key={i} className="font-semibold text-foreground">{line.replace(/\*\*/g, '')}</p>
+                          return <p key={i} className="font-semibold text-white">{line.replace(/\*\*/g, '')}</p>
                         }
                         if (line === '') {
                           return <br key={i} />
                         }
-                        return <p key={i} className="text-muted-foreground">{line}</p>
+                        return <p key={i} className="text-white">{line}</p>
                       })}
                     </div>
                   </div>
@@ -716,7 +716,7 @@ export default function PostDetailPage() {
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{post.author.name}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-white">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
                             {post.author.location}
@@ -737,7 +737,7 @@ export default function PostDetailPage() {
                     {loaderData.dbPost ? dbComments.length : answers.length} Response{(loaderData.dbPost ? dbComments.length : answers.length) !== 1 ? "s" : ""}
                   </h2>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Sort by:</span>
+                    <span className="text-sm text-white">Sort by:</span>
                     <Button
                       variant={sortBy === "votes" ? "secondary" : "ghost"}
                       size="sm"
@@ -769,10 +769,10 @@ export default function PostDetailPage() {
                             </Avatar>
                             <div>
                               <p className="text-sm font-medium">{comment.author}</p>
-                              <p className="text-xs text-muted-foreground">{comment.createdAt}</p>
+                              <p className="text-xs text-white">{comment.createdAt}</p>
                             </div>
                           </div>
-                          <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-sm">
+                          <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-sm">
                             {comment.content}
                           </div>
 
@@ -781,7 +781,7 @@ export default function PostDetailPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="gap-1.5 text-xs text-muted-foreground hover:text-primary"
+                              className="gap-1.5 text-xs text-white hover:text-primary"
                               onClick={() => setShowCommentInput(prev => ({ ...prev, [comment.id]: !prev[comment.id] }))}
                             >
                               <Reply className="h-3.5 w-3.5" />
@@ -802,10 +802,10 @@ export default function PostDetailPage() {
                                       </AvatarFallback>
                                     </Avatar>
                                     <span className="text-sm font-medium text-primary">{reply.author}</span>
-                                    <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
+                                    <span className="text-xs text-white">{reply.createdAt}</span>
                                   </div>
                                   <div className="flex items-center gap-2 ml-8 mt-1">
-                                    <p className="text-sm text-foreground/80 flex-1">{reply.content}</p>
+                                    <p className="text-sm text-white/80 flex-1">{reply.content}</p>
                                     <LikeButton commentId={reply.id} likes={reply.likes} liked={reply.liked} />
                                   </div>
                                 </div>
@@ -880,16 +880,16 @@ export default function PostDetailPage() {
                               </div>
                             )}
 
-                            <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-sm">
+                            <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-sm">
                               {answer.content.split('\n').map((line, i) => {
                                 if (line.startsWith('### ')) {
-                                  return <h4 key={i} className="text-base font-semibold mt-3 mb-2 text-foreground">{line.replace('### ', '')}</h4>
+                                  return <h4 key={i} className="text-base font-semibold mt-3 mb-2 text-white">{line.replace('### ', '')}</h4>
                                 }
                                 if (line.startsWith('- ')) {
-                                  return <li key={i} className="ml-4 text-muted-foreground">{line.replace('- ', '')}</li>
+                                  return <li key={i} className="ml-4 text-white">{line.replace('- ', '')}</li>
                                 }
                                 if (line.match(/^\d+\./)) {
-                                  return <li key={i} className="ml-4 text-muted-foreground list-decimal">{line.replace(/^\d+\.\s*/, '')}</li>
+                                  return <li key={i} className="ml-4 text-white list-decimal">{line.replace(/^\d+\.\s*/, '')}</li>
                                 }
                                 if (line === '') {
                                   return <br key={i} />
@@ -932,7 +932,7 @@ export default function PostDetailPage() {
                               {/* Responder Info */}
                               <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-2 px-3">
                                 <div className="text-right text-xs">
-                                  <p className="text-muted-foreground">answered {answer.createdAt}</p>
+                                  <p className="text-white">answered {answer.createdAt}</p>
                                 </div>
                                 <Avatar className="h-8 w-8">
                                   <AvatarFallback className="text-xs bg-primary/20 text-primary">
@@ -946,7 +946,7 @@ export default function PostDetailPage() {
                                       <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                                     )}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">{answer.author.reputation} rep</p>
+                                  <p className="text-xs text-white">{answer.author.reputation} rep</p>
                                 </div>
                               </div>
                             </div>
@@ -958,12 +958,12 @@ export default function PostDetailPage() {
                                   {answer.comments.map((comment) => (
                                     <div key={comment.id} className="flex gap-3 text-sm bg-secondary/20 rounded-lg p-3">
                                       <div className="flex-1">
-                                        <span className="text-muted-foreground">{comment.content}</span>
-                                        <span className="text-muted-foreground"> – </span>
+                                        <span className="text-white">{comment.content}</span>
+                                        <span className="text-white"> – </span>
                                         <span className="font-medium text-primary">{comment.author}</span>
-                                        <span className="text-muted-foreground text-xs ml-2">{comment.createdAt}</span>
+                                        <span className="text-white text-xs ml-2">{comment.createdAt}</span>
                                       </div>
-                                      <div className="flex items-center gap-1 text-muted-foreground">
+                                      <div className="flex items-center gap-1 text-white">
                                         <Button variant="ghost" size="icon" className="h-6 w-6">
                                           <ThumbsUp className="h-3 w-3" />
                                         </Button>
@@ -1005,7 +1005,7 @@ export default function PostDetailPage() {
               <Card className="mt-8">
                 <CardHeader>
                   <h3 className="text-lg font-semibold">Your Response</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     Share your proposal or offer help to this request
                   </p>
                 </CardHeader>
@@ -1018,7 +1018,7 @@ export default function PostDetailPage() {
                       required
                     />
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-white">
                         Markdown formatting is supported
                       </p>
                       <Button
@@ -1040,7 +1040,7 @@ export default function PostDetailPage() {
               {/* Author Info Card */}
               <Card>
                 <CardHeader className="pb-3">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">
                     Posted By
                   </h3>
                 </CardHeader>
@@ -1053,15 +1053,15 @@ export default function PostDetailPage() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{post.author.name}</p>
-                      <p className="text-sm text-muted-foreground">{post.author.reputation} reputation</p>
+                      <p className="text-sm text-white">{post.author.reputation} reputation</p>
                     </div>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-white">
                       <MapPin className="h-4 w-4" />
                       {post.author.location}
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-white">
                       <Calendar className="h-4 w-4" />
                       Member since {post.author.joinedDate}
                     </div>
@@ -1072,7 +1072,7 @@ export default function PostDetailPage() {
               {/* Similar Posts */}
               <Card>
                 <CardHeader>
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">
                     Similar Posts
                   </h3>
                 </CardHeader>
@@ -1086,7 +1086,7 @@ export default function PostDetailPage() {
                       <p className="text-sm font-medium line-clamp-2 hover:text-primary transition-colors">
                         {similarPost.title}
                       </p>
-                      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="mt-2 flex items-center gap-3 text-xs text-white">
                         <span>{similarPost.responses} responses</span>
                         <span>{similarPost.budget}</span>
                       </div>

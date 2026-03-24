@@ -277,7 +277,7 @@ export default function AdminPaymentsPage() {
       render: (payment) => (
         <div>
           <p className="font-mono text-sm font-medium">{payment.transactionId}</p>
-          <p className="text-xs text-muted-foreground">{payment.createdAt}</p>
+          <p className="text-xs text-white">{payment.createdAt}</p>
         </div>
       ),
     },
@@ -325,7 +325,7 @@ export default function AdminPaymentsPage() {
         <div>
           <span className="font-semibold">{payment.amount} Kip</span>
           {payment.fee > 0 && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white">
               Fee: {payment.fee} Kip
             </p>
           )}
@@ -336,7 +336,7 @@ export default function AdminPaymentsPage() {
       key: "method",
       label: "Method",
       render: (payment) => (
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2 text-white">
           {getMethodIcon(payment.method)}
           <span className="capitalize">{payment.method}</span>
         </div>
@@ -356,7 +356,7 @@ export default function AdminPaymentsPage() {
         <div className="flex items-start justify-between">
           <div>
             <p className="font-mono text-sm font-medium">{payment.transactionId}</p>
-            <p className="text-xs text-muted-foreground">{payment.createdAt}</p>
+            <p className="text-xs text-white">{payment.createdAt}</p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -396,15 +396,15 @@ export default function AdminPaymentsPage() {
 
         <div className="mt-4 space-y-2 rounded-lg bg-muted/50 p-3 text-sm">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">From:</span>
+            <span className="text-white">From:</span>
             <span className="font-medium">{payment.payer}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">To:</span>
+            <span className="text-white">To:</span>
             <span className="font-medium">{payment.recipient}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Method:</span>
+            <span className="text-white">Method:</span>
             <div className="flex items-center gap-1">
               {getMethodIcon(payment.method)}
               <span className="capitalize">{payment.method}</span>
@@ -412,7 +412,7 @@ export default function AdminPaymentsPage() {
           </div>
           {payment.fee > 0 && (
             <div className="flex items-center justify-between border-t border-border pt-2">
-              <span className="text-muted-foreground">Platform Fee:</span>
+              <span className="text-white">Platform Fee:</span>
               <span className="text-destructive">-{payment.fee} Kip</span>
             </div>
           )}
@@ -425,7 +425,7 @@ export default function AdminPaymentsPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-        <p className="text-muted-foreground">Monitor all transactions and payouts</p>
+        <p className="text-white">Monitor all transactions and payouts</p>
       </div>
 
       {/* Stats Grid */}
@@ -433,10 +433,10 @@ export default function AdminPaymentsPage() {
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-white">
                 {stat.title}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <stat.icon className="h-4 w-4 text-white" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
@@ -449,7 +449,7 @@ export default function AdminPaymentsPage() {
                 <span className={stat.trend === "up" ? "text-emerald-500" : "text-destructive"}>
                   {stat.change}
                 </span>
-                <span className="text-muted-foreground">from last month</span>
+                <span className="text-white">from last month</span>
               </div>
             </CardContent>
           </Card>
@@ -514,28 +514,28 @@ export default function AdminPaymentsPage() {
                   <span className="text-2xl font-bold">{selectedPayment.amount} Kip</span>
                 </div>
 
-                <p className="text-muted-foreground">{selectedPayment.description}</p>
+                <p className="text-white">{selectedPayment.description}</p>
 
                 <div className="grid gap-4">
                   <div className="rounded-lg border p-4">
-                    <p className="text-sm text-muted-foreground">From</p>
+                    <p className="text-sm text-white">From</p>
                     <p className="font-medium">{selectedPayment.payer}</p>
-                    <p className="text-sm text-muted-foreground">{selectedPayment.payerEmail}</p>
+                    <p className="text-sm text-white">{selectedPayment.payerEmail}</p>
                   </div>
                   <div className="rounded-lg border p-4">
-                    <p className="text-sm text-muted-foreground">To</p>
+                    <p className="text-sm text-white">To</p>
                     <p className="font-medium">{selectedPayment.recipient}</p>
-                    <p className="text-sm text-muted-foreground">{selectedPayment.recipientEmail}</p>
+                    <p className="text-sm text-white">{selectedPayment.recipientEmail}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2 rounded-lg bg-muted/50 p-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Amount</span>
+                    <span className="text-white">Amount</span>
                     <span>{selectedPayment.amount} Kip</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Platform Fee (10%)</span>
+                    <span className="text-white">Platform Fee (10%)</span>
                     <span className="text-destructive">-{selectedPayment.fee} Kip</span>
                   </div>
                   <div className="flex items-center justify-between border-t border-border pt-2 font-medium">
@@ -545,11 +545,11 @@ export default function AdminPaymentsPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-white">
                     {getMethodIcon(selectedPayment.method)}
                     <span className="capitalize">{selectedPayment.method}</span>
                   </div>
-                  <span className="text-muted-foreground">{selectedPayment.createdAt}</span>
+                  <span className="text-white">{selectedPayment.createdAt}</span>
                 </div>
               </div>
               <DialogFooter>

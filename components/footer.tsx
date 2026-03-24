@@ -39,7 +39,7 @@ export function Footer() {
     <footer className="relative border-t border-border bg-card/30">
       {/* Gradient accent */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      
+
       <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8 lg:py-16">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
           {/* Brand */}
@@ -52,8 +52,8 @@ export function Footer() {
                 Lao<span className="gradient-text">Dev</span>
               </span>
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Connecting developers and clients across Laos. Find expert consultants, 
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-white">
+              Connecting developers and clients across Laos. Find expert consultants,
               get mentorship, and build your tech career.
             </p>
             <div className="mt-6 flex gap-3">
@@ -64,7 +64,7 @@ export function Footer() {
                   className="group flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:scale-105"
                   aria-label={social.label}
                 >
-                  <social.icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+                  <social.icon className="h-4 w-4 text-white transition-colors group-hover:text-primary" />
                 </a>
               ))}
             </div>
@@ -73,13 +73,13 @@ export function Footer() {
           {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="text-sm font-semibold text-foreground">{category}</h3>
+              <h3 className="text-sm font-semibold text-white">{category}</h3>
               <ul className="mt-4 space-y-2.5">
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
                       to={link.href}
-                      className="group inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
+                      className="group inline-flex items-center text-sm text-white transition-colors hover:text-primary"
                     >
                       <span className="relative">
                         {link.label}
@@ -94,10 +94,10 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white">
             {new Date().getFullYear()} LaoDev. All rights reserved.
           </p>
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-sm text-white">
             Made with{" "}
             <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" />{" "}
             in Laos

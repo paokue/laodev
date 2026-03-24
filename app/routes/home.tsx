@@ -221,7 +221,7 @@ function FeaturedDevelopersCarousel() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Meet Our <span className="gradient-text">Top Consultants</span>
           </h2>
-          <p className="mt-4 max-w-2xl text-muted-foreground">
+          <p className="mt-4 max-w-2xl text-white">
             Experienced developers ready to help with your projects, mentorship needs, or technical challenges.
           </p>
         </div>
@@ -332,17 +332,17 @@ export default function HomePage() {
               <span className="relative">
                 <span className="gradient-text text-glow">Top</span>
               </span>{" "}
-              <br className="hidden sm:block" />
+              <br className="block" />
               <TypingAnimation words={typingWords} className="text-primary" />
-              <br className="hidden sm:block" />
+              <br className="block" />
               in Laos
             </h1>
 
-            <p className="mt-6 w-full text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl animate-fade-in-up stagger-2 opacity-0">
+            <p className="mt-6 w-full text-balance text-lg leading-relaxed text-white sm:text-xl animate-fade-in-up stagger-2 opacity-0">
               Connect with verified developers for expert consultations, mentorship, and project support.
             </p>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row animate-fade-in-up stagger-3 opacity-0">
+            <div className="mt-10 flex gap-4 sm:flex-row animate-fade-in-up stagger-3 opacity-0">
               <Link to="/developers">
                 <Button size="lg" className="group gap-2 px-8 glow transition-all hover:glow-lg">
                   Browse Developers
@@ -373,7 +373,7 @@ export default function HomePage() {
                         duration={2000 + index * 200}
                       />
                     </div>
-                    <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                    <div className="mt-1 text-xs text-white sm:text-sm">
                       {stat.label}
                     </div>
                   </div>
@@ -384,8 +384,8 @@ export default function HomePage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-subtle">
-          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+        <div className="hidden sm:block absolute bottom-0 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce-subtle">
+          <div className="flex flex-col items-center gap-2 text-white">
             <span className="text-xs">Scroll to explore</span>
             <div className="h-8 w-5 rounded-full border border-muted-foreground/30 p-1">
               <div className="h-2 w-full rounded-full bg-primary animate-pulse" />
@@ -403,7 +403,7 @@ export default function HomePage() {
           <Card className="group relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-30" />
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-[100px] transition-all duration-700 group-hover:scale-150" />
-            <CardContent className="relative p-8 md:p-12">
+            <CardContent className="relative p-4 md:p-12">
               <div className="grid gap-8 md:grid-cols-2 md:items-center">
                 <div>
                   <Badge
@@ -416,7 +416,7 @@ export default function HomePage() {
                   <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                     Need Help With <span className="gradient-text">Your Project</span>?
                   </h2>
-                  <p className="mt-4 text-muted-foreground">
+                  <p className="mt-4 text-white">
                     Post your project requirements and let developers come to you.
                     Perfect for students, startups, and junior developers seeking guidance.
                   </p>
@@ -519,12 +519,12 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 <CardContent className="relative p-6">
                   <div className="mb-4 text-4xl text-primary/30">&ldquo;</div>
-                  <p className="text-muted-foreground italic">{testimonial.quote}</p>
+                  <p className="text-white italic">{testimonial.quote}</p>
                   <div className="mt-6 flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/40 to-primary/20" />
                     <div>
                       <div className="font-semibold">{testimonial.author}</div>
-                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                      <div className="text-sm text-white">{testimonial.role}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -540,10 +540,10 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Ready to <span className="gradient-text">Get Started</span>?
           </h2>
-          <p className="mt-4 text-muted-foreground">
+          <p className="mt-4 text-white">
             Join the growing community of developers and clients in Laos.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-10 flex items-center justify-center gap-4 sm:flex-row">
             <Link to="/register/user">
               <Button size="lg" className="group gap-2 px-8 glow hover:glow-lg transition-all">
                 <Users className="h-4 w-4 transition-transform group-hover:scale-110" />

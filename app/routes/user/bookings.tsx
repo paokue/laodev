@@ -114,8 +114,8 @@ export default function UserBookingsPage() {
     return allBookings.filter((booking) => {
       if (status !== "all" && booking.status !== status) return false
       if (searchQuery &&
-          !booking.developer.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !booking.service.toLowerCase().includes(searchQuery.toLowerCase())) return false
+        !booking.developer.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !booking.service.toLowerCase().includes(searchQuery.toLowerCase())) return false
       return true
     })
   }
@@ -131,8 +131,8 @@ export default function UserBookingsPage() {
           </Avatar>
           <div>
             <p className="font-semibold">{booking.developer}</p>
-            <p className="text-sm text-muted-foreground">{booking.service}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <p className="text-sm text-white">{booking.service}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-white">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 {booking.date}
@@ -202,7 +202,7 @@ export default function UserBookingsPage() {
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 My <span className="gradient-text">Bookings</span>
               </h1>
-              <p className="mt-1 text-muted-foreground">
+              <p className="mt-1 text-white">
                 Manage your consultation sessions
               </p>
             </div>
@@ -224,7 +224,7 @@ export default function UserBookingsPage() {
             ].map((stat) => (
               <Card key={stat.label} className="border-border">
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-sm text-white">{stat.label}</p>
                   <p className={`text-2xl font-bold ${stat.color}`}>
                     {stat.prefix}{stat.count}{stat.suffix}
                   </p>
@@ -236,7 +236,7 @@ export default function UserBookingsPage() {
           {/* Search */}
           <div className="mb-6">
             <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
               <Input
                 placeholder="Search by developer or service..."
                 className="pl-9"
@@ -265,9 +265,9 @@ export default function UserBookingsPage() {
               {filterBookings("upcoming").length === 0 ? (
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Calendar className="h-12 w-12 text-muted-foreground" />
+                    <Calendar className="h-12 w-12 text-white" />
                     <p className="mt-4 font-medium">No upcoming sessions</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Book a consultation with a developer
                     </p>
                     <Link to="/developers">

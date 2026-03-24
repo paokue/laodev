@@ -86,7 +86,7 @@ export default function BookingPage() {
           {/* Back Link */}
           <Link
             to={`/developers/${id}`}
-            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-white transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Profile
@@ -119,7 +119,7 @@ export default function BookingPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+              <div className="mt-2 flex justify-between text-xs text-white">
                 <span>Select Time</span>
                 <span>Details</span>
                 <span>Payment</span>
@@ -154,12 +154,12 @@ export default function BookingPage() {
                             className={cn(
                               "rounded-lg border p-3 text-center transition-colors",
                               selectedDuration === duration.value
-                                ? "border-primary bg-primary/10 text-foreground"
+                                ? "border-primary bg-primary/10 text-white"
                                 : "border-border hover:border-primary/50"
                             )}
                           >
                             <div className="text-sm font-medium">{duration.label}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <div className="mt-1 text-xs text-white">
                               {developer.hourlyRate * duration.price} Kip
                             </div>
                           </button>
@@ -189,7 +189,7 @@ export default function BookingPage() {
                             )}
                           >
                             <div className="text-sm font-medium">{day.date}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <div className="mt-1 text-xs text-white">
                               {day.slots.length} slots
                             </div>
                           </button>
@@ -257,7 +257,7 @@ export default function BookingPage() {
                         onChange={(e) => setMessage(e.target.value)}
                         rows={6}
                       />
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm text-white">
                         This helps the developer prepare for your consultation
                       </p>
                     </div>
@@ -293,7 +293,7 @@ export default function BookingPage() {
                           <Wallet className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Wallet Balance</p>
+                          <p className="text-sm text-white">Wallet Balance</p>
                           <p className="text-lg font-semibold">{walletBalance.toLocaleString()} Kip</p>
                         </div>
                       </div>
@@ -310,7 +310,7 @@ export default function BookingPage() {
                         <Coffee className="h-4 w-4 text-amber-400" />
                         Buy a coffee for {developer.name.split(" ")[0]}?
                       </label>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-white">
                         Show your appreciation with a small tip
                       </p>
                       <div className="flex gap-2">
@@ -322,7 +322,7 @@ export default function BookingPage() {
                             className={cn(
                               "rounded-lg border px-4 py-2 text-sm font-medium transition-colors",
                               coffeeTip === tip
-                                ? "border-primary bg-primary/10 text-foreground"
+                                ? "border-primary bg-primary/10 text-white"
                                 : "border-border hover:border-primary/50"
                             )}
                           >
@@ -335,12 +335,12 @@ export default function BookingPage() {
                     {/* Payment Summary */}
                     <div className="space-y-3 rounded-lg border border-border p-4">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Consultation fee</span>
+                        <span className="text-white">Consultation fee</span>
                         <span>{totalPrice.toFixed(2)} Kip</span>
                       </div>
                       {coffeeTip > 0 && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="flex items-center gap-1 text-muted-foreground">
+                          <span className="flex items-center gap-1 text-white">
                             <Coffee className="h-3.5 w-3.5 text-amber-400" />
                             Coffee tip
                           </span>
@@ -352,9 +352,9 @@ export default function BookingPage() {
                         <span className="text-primary">{(totalPrice + coffeeTip).toFixed(2)} Kip</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Remaining balance</span>
+                        <span className="text-white">Remaining balance</span>
                         <span className={cn(
-                          walletBalance - totalPrice - coffeeTip < 0 ? "text-destructive" : "text-muted-foreground"
+                          walletBalance - totalPrice - coffeeTip < 0 ? "text-destructive" : "text-white"
                         )}>
                           {(walletBalance - totalPrice - coffeeTip).toLocaleString()} Kip
                         </span>
@@ -397,7 +397,7 @@ export default function BookingPage() {
                       <CheckCircle2 className="h-10 w-10 text-emerald-500" />
                     </div>
                     <h2 className="text-2xl font-bold">Booking Confirmed!</h2>
-                    <p className="mt-2 text-muted-foreground">
+                    <p className="mt-2 text-white">
                       Your consultation has been booked successfully
                     </p>
 
@@ -411,18 +411,18 @@ export default function BookingPage() {
                         </Avatar>
                         <div>
                           <p className="font-semibold">{developer.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-white">
                             {developer.title}
                           </p>
                         </div>
                       </div>
                       <div className="space-y-2 border-t border-border pt-4">
                         <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <Calendar className="h-4 w-4 text-white" />
                           <span>{selectedDate}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <Clock className="h-4 w-4 text-white" />
                           <span>
                             {selectedTime} ({selectedDurationInfo?.label})
                           </span>
@@ -460,7 +460,7 @@ export default function BookingPage() {
                     </Avatar>
                     <div>
                       <p className="font-semibold">{developer.name}</p>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1 text-sm text-white">
                         <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                         <span>
                           {developer.rating} ({developer.reviewCount})
@@ -473,17 +473,17 @@ export default function BookingPage() {
                   {selectedDate && (
                     <div className="space-y-3 border-t border-border pt-4">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Date</span>
+                        <span className="text-white">Date</span>
                         <span className="font-medium">{selectedDate}</span>
                       </div>
                       {selectedTime && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Time</span>
+                          <span className="text-white">Time</span>
                           <span className="font-medium">{selectedTime}</span>
                         </div>
                       )}
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Duration</span>
+                        <span className="text-white">Duration</span>
                         <span className="font-medium">{selectedDurationInfo?.label}</span>
                       </div>
                     </div>
@@ -492,14 +492,14 @@ export default function BookingPage() {
                   {/* Price Breakdown */}
                   <div className="space-y-3 border-t border-border pt-4">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
+                      <span className="text-white">
                         {developer.hourlyRate} Kip/hour x {selectedDurationInfo?.label}
                       </span>
                       <span>{totalPrice.toFixed(2)} Kip</span>
                     </div>
                     {coffeeTip > 0 && (
                       <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1 text-muted-foreground">
+                        <span className="flex items-center gap-1 text-white">
                           <Coffee className="h-3.5 w-3.5 text-amber-400" />
                           Coffee tip
                         </span>
@@ -510,7 +510,7 @@ export default function BookingPage() {
                       <span>Total</span>
                       <span className="text-primary">{(totalPrice + coffeeTip).toFixed(2)} Kip</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-white">
                       <Wallet className="h-3.5 w-3.5" />
                       Paying from wallet
                     </div>

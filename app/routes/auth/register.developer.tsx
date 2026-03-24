@@ -308,7 +308,7 @@ export default function DeveloperRegistrationPage() {
             <span className="text-xl font-semibold tracking-tight">LaoDev</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Already have an account?</span>
+            <span className="text-sm text-white">Already have an account?</span>
             <Link to="/login">
               <Button variant="ghost" size="sm">
                 Log In
@@ -347,7 +347,7 @@ export default function DeveloperRegistrationPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+            <div className="mt-2 flex justify-between text-xs text-white">
               <span>Account</span>
               <span>Profile</span>
               <span>Skills</span>
@@ -371,7 +371,7 @@ export default function DeveloperRegistrationPage() {
                       Full Name <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input
                         id="name"
                         placeholder="Enter your full name"
@@ -390,7 +390,7 @@ export default function DeveloperRegistrationPage() {
                       Email Address <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input
                         id="email"
                         type="email"
@@ -410,7 +410,7 @@ export default function DeveloperRegistrationPage() {
                       Password <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -425,7 +425,7 @@ export default function DeveloperRegistrationPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-white"
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -441,7 +441,7 @@ export default function DeveloperRegistrationPage() {
                       Confirm Password <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input
                         id="confirmPassword"
                         type={showPassword ? "text" : "password"}
@@ -456,7 +456,7 @@ export default function DeveloperRegistrationPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-white"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -470,7 +470,7 @@ export default function DeveloperRegistrationPage() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
 
-                  <p className="text-center text-sm text-muted-foreground">
+                  <p className="text-center text-sm text-white">
                     Looking for consultations instead?{" "}
                     <Link to="/register/user" className="text-primary hover:underline">
                       Join as a User
@@ -497,7 +497,7 @@ export default function DeveloperRegistrationPage() {
                       Professional Title
                     </label>
                     <div className="relative">
-                      <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input
                         id="title"
                         placeholder="e.g., Senior Full-Stack Developer"
@@ -522,7 +522,7 @@ export default function DeveloperRegistrationPage() {
                       }
                     >
                       <SelectTrigger>
-                        <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <MapPin className="mr-2 h-4 w-4 text-white" />
                         <SelectValue placeholder="Select your location" />
                       </SelectTrigger>
                       <SelectContent>
@@ -564,7 +564,7 @@ export default function DeveloperRegistrationPage() {
                         Hourly Rate (USD) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                         <Input
                           id="hourlyRate"
                           type="number"
@@ -670,7 +670,7 @@ export default function DeveloperRegistrationPage() {
                           </button>
                         ))}
                         {filteredSkills.length === 0 && (
-                          <p className="px-4 py-2 text-sm text-muted-foreground">
+                          <p className="px-4 py-2 text-sm text-white">
                             No skills found
                           </p>
                         )}
@@ -680,7 +680,7 @@ export default function DeveloperRegistrationPage() {
 
                   {/* Popular Skills */}
                   <div>
-                    <p className="mb-2 text-sm text-muted-foreground">Popular Skills</p>
+                    <p className="mb-2 text-sm text-white">Popular Skills</p>
                     <div className="flex flex-wrap gap-2">
                       {availableSkills
                         .slice(0, 12)
@@ -698,7 +698,7 @@ export default function DeveloperRegistrationPage() {
                     </div>
                   </div>
 
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white">
                     {formData.skills.length}/10 skills selected
                   </p>
 
@@ -735,7 +735,7 @@ export default function DeveloperRegistrationPage() {
                 <CardTitle className="text-2xl">Verify Your Email <span className="text-rose-500">*</span></CardTitle>
                 <CardDescription>
                   We sent a 6-digit code to{" "}
-                  <span className="font-medium text-foreground">{formData.email}</span>
+                  <span className="font-medium text-white">{formData.email}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -766,7 +766,7 @@ export default function DeveloperRegistrationPage() {
                   </Button>
 
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       {"Didn't receive the code? "}
                       <button
                         type="button"
@@ -781,7 +781,7 @@ export default function DeveloperRegistrationPage() {
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
+                    className="w-full text-center text-sm text-white hover:text-white"
                   >
                     Go back
                   </button>

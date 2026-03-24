@@ -181,7 +181,7 @@ export default function WriteKnowledgePage() {
             <div className="flex items-center gap-4">
               <Link
                 to="/knowledge"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 text-sm text-white hover:text-white transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back
@@ -236,7 +236,7 @@ export default function WriteKnowledgePage() {
                       placeholder="Article Title..."
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="border-0 bg-transparent text-3xl font-bold placeholder:text-muted-foreground/50 focus-visible:ring-0 px-0 h-auto py-2"
+                      className="border-0 bg-transparent text-3xl font-bold placeholder:text-white/50 focus-visible:ring-0 px-0 h-auto py-2"
                     />
                   </div>
 
@@ -248,7 +248,7 @@ export default function WriteKnowledgePage() {
                       onChange={(e) => setExcerpt(e.target.value)}
                       className="min-h-[80px] resize-none border-border bg-card/50 focus:border-primary/50"
                     />
-                    <p className="text-xs text-muted-foreground">{excerpt.length}/200 characters</p>
+                    <p className="text-xs text-white">{excerpt.length}/200 characters</p>
                   </div>
 
                   {/* Toolbar */}
@@ -358,7 +358,7 @@ export default function WriteKnowledgePage() {
                   />
 
                   {/* Word Count */}
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between text-sm text-white">
                     <span>{wordCount} words</span>
                     <span>{readTime} min read</span>
                   </div>
@@ -371,7 +371,7 @@ export default function WriteKnowledgePage() {
                       {category || "Category"}
                     </Badge>
                     <h1 className="text-3xl font-bold">{title || "Article Title"}</h1>
-                    <p className="mt-4 text-lg text-muted-foreground">
+                    <p className="mt-4 text-lg text-white">
                       {excerpt || "Article excerpt will appear here..."}
                     </p>
 
@@ -397,30 +397,30 @@ export default function WriteKnowledgePage() {
                             <CheckCircle2 className="h-4 w-4 text-primary" />
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{readTime} min read</p>
+                        <p className="text-sm text-white">{readTime} min read</p>
                       </div>
                     </div>
 
                     <div className="mt-8 prose prose-invert max-w-none">
-                      <div className="whitespace-pre-line text-foreground/90 leading-relaxed">
+                      <div className="whitespace-pre-line text-white/90 leading-relaxed">
                         {content.split("\n").map((line, i) => {
                           if (line.startsWith("## ")) {
                             return (
-                              <h2 key={i} className="text-2xl font-bold mt-8 mb-4 text-foreground">
+                              <h2 key={i} className="text-2xl font-bold mt-8 mb-4 text-white">
                                 {line.replace("## ", "")}
                               </h2>
                             )
                           }
                           if (line.startsWith("### ")) {
                             return (
-                              <h3 key={i} className="text-xl font-bold mt-6 mb-3 text-foreground">
+                              <h3 key={i} className="text-xl font-bold mt-6 mb-3 text-white">
                                 {line.replace("### ", "")}
                               </h3>
                             )
                           }
                           if (line.startsWith("- ")) {
                             return (
-                              <li key={i} className="ml-6 text-foreground/80">
+                              <li key={i} className="ml-6 text-white/80">
                                 {line.replace("- ", "")}
                               </li>
                             )
@@ -429,7 +429,7 @@ export default function WriteKnowledgePage() {
                             return (
                               <blockquote
                                 key={i}
-                                className="border-l-4 border-primary pl-4 italic text-muted-foreground my-4"
+                                className="border-l-4 border-primary pl-4 italic text-white my-4"
                               >
                                 {line.replace("> ", "")}
                               </blockquote>
@@ -439,7 +439,7 @@ export default function WriteKnowledgePage() {
                             return <br key={i} />
                           }
                           return (
-                            <p key={i} className="my-4 text-foreground/80">
+                            <p key={i} className="my-4 text-white/80">
                               {line}
                             </p>
                           )
@@ -456,7 +456,7 @@ export default function WriteKnowledgePage() {
               {/* Author Card */}
               <Card className="border-border bg-card/50">
                 <CardContent className="p-4">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Publishing as</h3>
+                  <h3 className="text-sm font-medium text-white mb-3">Publishing as</h3>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 border border-border">
                       <AvatarImage src={currentAuthor.avatar} />
@@ -471,7 +471,7 @@ export default function WriteKnowledgePage() {
                           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">{currentAuthor.title}</p>
+                      <p className="text-xs text-white">{currentAuthor.title}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -564,7 +564,7 @@ export default function WriteKnowledgePage() {
                         Earn Coffee Tips
                         <Sparkles className="h-4 w-4 text-amber-500" />
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-white mt-1">
                         Share valuable knowledge and readers can show appreciation by buying you a coffee.
                       </p>
                     </div>
@@ -579,7 +579,7 @@ export default function WriteKnowledgePage() {
                     <Info className="h-4 w-4 text-primary" />
                     Writing Tips
                   </h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
+                  <ul className="space-y-2 text-sm text-white">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                       Use clear headings to structure your content

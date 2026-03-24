@@ -189,7 +189,7 @@ export default function AdminPostsPage() {
         )
       case "completed":
         return (
-          <Badge variant="outline" className="border-muted-foreground/50 bg-muted text-muted-foreground">
+          <Badge variant="outline" className="border-muted-foreground/50 bg-muted text-white">
             Completed
           </Badge>
         )
@@ -210,7 +210,7 @@ export default function AdminPostsPage() {
       render: (post) => (
         <div className="max-w-[300px]">
           <p className="truncate font-medium">{post.title}</p>
-          <p className="text-sm text-muted-foreground">{post.author}</p>
+          <p className="text-sm text-white">{post.author}</p>
         </div>
       ),
     },
@@ -231,7 +231,7 @@ export default function AdminPostsPage() {
       label: "Budget",
       render: (post) => (
         <div className="flex items-center gap-1">
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <DollarSign className="h-4 w-4 text-white" />
           {post.budget}
         </div>
       ),
@@ -242,7 +242,7 @@ export default function AdminPostsPage() {
       sortable: true,
       render: (post) => (
         <div className="flex items-center gap-1">
-          <Users className="h-4 w-4 text-muted-foreground" />
+          <Users className="h-4 w-4 text-white" />
           {post.responses}
         </div>
       ),
@@ -252,7 +252,7 @@ export default function AdminPostsPage() {
       label: "Created",
       sortable: true,
       render: (post) => (
-        <span className="text-muted-foreground">{post.createdAt}</span>
+        <span className="text-white">{post.createdAt}</span>
       ),
     },
   ]
@@ -269,7 +269,7 @@ export default function AdminPostsPage() {
                   {post.author.split(" ").map((n) => n[0]).join("")}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm text-muted-foreground">{post.author}</span>
+              <span className="text-sm text-white">{post.author}</span>
             </div>
           </div>
           <DropdownMenu>
@@ -314,19 +314,19 @@ export default function AdminPostsPage() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-muted-foreground">Budget</p>
+            <p className="text-white">Budget</p>
             <p className="font-medium">{post.budget}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Responses</p>
+            <p className="text-white">Responses</p>
             <p className="font-medium">{post.responses}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Created</p>
+            <p className="text-white">Created</p>
             <p className="font-medium">{post.createdAt}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Deadline</p>
+            <p className="text-white">Deadline</p>
             <p className="font-medium">{post.deadline}</p>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function AdminPostsPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Posts</h1>
-        <p className="text-muted-foreground">Manage consultation requests and project posts</p>
+        <p className="text-white">Manage consultation requests and project posts</p>
       </div>
 
       <DataTable
@@ -408,7 +408,7 @@ export default function AdminPostsPage() {
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">{selectedPost.author}</p>
-                      <p className="text-xs text-muted-foreground">{selectedPost.authorEmail}</p>
+                      <p className="text-xs text-white">{selectedPost.authorEmail}</p>
                     </div>
                   </div>
                 </div>
@@ -418,19 +418,19 @@ export default function AdminPostsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <DollarSign className="h-4 w-4 text-white" />
                     <span>{selectedPost.budget}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <Users className="h-4 w-4 text-white" />
                     <span>{selectedPost.responses} responses</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Clock className="h-4 w-4 text-white" />
                     <span>Created {selectedPost.createdAt}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Clock className="h-4 w-4 text-white" />
                     <span>Deadline {selectedPost.deadline}</span>
                   </div>
                 </div>

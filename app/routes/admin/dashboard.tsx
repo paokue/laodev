@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
+        <p className="text-white">
           Welcome back! Here{"'"}s what{"'"}s happening with LaoDev.
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
+                  <p className="text-sm text-white">{stat.title}</p>
                   <p className="text-2xl font-bold">{stat.value}</p>
                 </div>
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
@@ -117,7 +117,7 @@ export default function AdminDashboardPage() {
               <div className="mt-4 flex items-center gap-1 text-sm">
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
                 <span className="text-emerald-500">{stat.change}</span>
-                <span className="text-muted-foreground">from last month</span>
+                <span className="text-white">from last month</span>
               </div>
             </CardContent>
           </Card>
@@ -155,11 +155,11 @@ export default function AdminDashboardPage() {
                     </div>
                     <div>
                       <p className="font-medium">{dev.name}</p>
-                      <p className="text-sm text-muted-foreground">{dev.title}</p>
+                      <p className="text-sm text-white">{dev.title}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1 text-sm text-white">
                       <Clock className="h-4 w-4" />
                       {dev.appliedAt}
                     </div>
@@ -198,7 +198,7 @@ export default function AdminDashboardPage() {
                     <p className="font-medium">
                       {booking.client} → {booking.developer}
                     </p>
-                    <p className="text-sm text-muted-foreground">{booking.date}</p>
+                    <p className="text-sm text-white">{booking.date}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-semibold text-primary">

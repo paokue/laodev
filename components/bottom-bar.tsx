@@ -22,26 +22,26 @@ export function BottomBar({ items }: BottomBarProps) {
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
           const Icon = item.icon
-          
+
           return (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
                 "flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors",
-                isActive 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
+                isActive
+                  ? "text-primary"
+                  : "text-white hover:text-white"
               )}
             >
               <div className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
                 isActive && "bg-primary/10"
               )}>
-                <Icon className={cn("h-5 w-5", isActive && "scale-110")} />
+                <Icon className={cn("h-4 w-4", isActive && "scale-110")} />
               </div>
               <span className={cn(
-                "text-[10px] font-medium",
+                "text-[14px] font-medium",
                 isActive && "text-primary"
               )}>
                 {item.label}

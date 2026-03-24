@@ -133,7 +133,7 @@ export default function UserRegistrationPage() {
             <span className="text-xl font-semibold tracking-tight">LaoDev</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Already have an account?</span>
+            <span className="text-sm text-white">Already have an account?</span>
             <Link to="/login">
               <Button variant="ghost" size="sm">Log In</Button>
             </Link>
@@ -165,7 +165,7 @@ export default function UserRegistrationPage() {
                       Full Name <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input id="name" name="name" placeholder="Enter your full name" className="pl-10" required />
                     </div>
                   </div>
@@ -175,7 +175,7 @@ export default function UserRegistrationPage() {
                       Email Address <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required />
                     </div>
                   </div>
@@ -185,9 +185,9 @@ export default function UserRegistrationPage() {
                       Password <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="Create a password (min 8 characters)" className="pl-10 pr-10" required />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-white">
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
@@ -198,9 +198,9 @@ export default function UserRegistrationPage() {
                       Confirm Password <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
                       <Input id="confirmPassword" name="confirmPassword" type={showPassword ? "text" : "password"} placeholder="Confirm your password" className="pl-10 pr-10" required />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-white">
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
@@ -212,7 +212,7 @@ export default function UserRegistrationPage() {
 
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} className="h-4 w-4 rounded border-border accent-primary" />
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-white">
                       I agree to the{" "}
                       <Link to="/terms" className="text-primary underline">Terms of Service</Link>{" "}
                       and{" "}
@@ -231,14 +231,14 @@ export default function UserRegistrationPage() {
 
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">Or</span></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-white">Or</span></div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-center text-sm text-muted-foreground">
+                  <p className="text-center text-sm text-white">
                     Already have an account? <Link to="/login" className="text-primary hover:underline">Log in</Link>
                   </p>
-                  <p className="text-center text-sm text-muted-foreground">
+                  <p className="text-center text-sm text-white">
                     Want to offer consultations? <Link to="/register/developer" className="text-primary hover:underline">Join as a Developer</Link>
                   </p>
                 </div>
@@ -254,7 +254,7 @@ export default function UserRegistrationPage() {
                 </div>
                 <CardTitle className="text-2xl">Verify Your Email</CardTitle>
                 <CardDescription>
-                  We sent a 6-digit code to <span className="text-foreground font-medium">{email}</span>
+                  We sent a 6-digit code to <span className="text-white font-medium">{email}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -284,14 +284,14 @@ export default function UserRegistrationPage() {
                   <Form method="post">
                     <input type="hidden" name="intent" value="resend-otp" />
                     <input type="hidden" name="email" value={email || ""} />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white">
                       Didn't receive the code?{" "}
                       <button type="submit" disabled={isSubmitting} className="text-primary hover:underline disabled:opacity-50">
                         Resend OTP
                       </button>
                     </p>
                   </Form>
-                  <Link to="/register/user" className="inline-flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                  <Link to="/register/user" className="inline-flex items-center justify-center gap-1 text-sm text-white hover:text-white">
                     <ArrowLeft className="h-3 w-3" />
                     Back to registration
                   </Link>

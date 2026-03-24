@@ -232,7 +232,7 @@ export default function AdminBookingsPage() {
         )
       case "refunded":
         return (
-          <Badge variant="outline" className="border-muted-foreground/50 bg-muted text-muted-foreground">
+          <Badge variant="outline" className="border-muted-foreground/50 bg-muted text-white">
             Refunded
           </Badge>
         )
@@ -251,7 +251,7 @@ export default function AdminBookingsPage() {
         )
       case "refunded":
         return (
-          <Badge className="bg-muted text-muted-foreground">Refunded</Badge>
+          <Badge className="bg-muted text-white">Refunded</Badge>
         )
     }
   }
@@ -270,7 +270,7 @@ export default function AdminBookingsPage() {
           </Avatar>
           <div>
             <p className="font-medium">{booking.client}</p>
-            <p className="text-xs text-muted-foreground">{booking.clientEmail}</p>
+            <p className="text-xs text-white">{booking.clientEmail}</p>
           </div>
         </div>
       ),
@@ -303,10 +303,10 @@ export default function AdminBookingsPage() {
       render: (booking) => (
         <div className="text-sm">
           <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3 text-muted-foreground" />
+            <Calendar className="h-3 w-3 text-white" />
             {booking.date}
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground">
+          <div className="flex items-center gap-1 text-white">
             <Clock className="h-3 w-3" />
             {booking.time} ({booking.duration})
           </div>
@@ -342,9 +342,9 @@ export default function AdminBookingsPage() {
           <div>
             <Badge variant="secondary" className="mb-2">{booking.service}</Badge>
             <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="h-4 w-4 text-white" />
               <span>{booking.date}</span>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="h-4 w-4 text-white" />
               <span>{booking.time}</span>
             </div>
           </div>
@@ -388,16 +388,16 @@ export default function AdminBookingsPage() {
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-white" />
               <div>
-                <p className="text-xs text-muted-foreground">Client</p>
+                <p className="text-xs text-white">Client</p>
                 <p className="text-sm font-medium">{booking.client}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Code2 className="h-4 w-4 text-primary" />
               <div className="text-right">
-                <p className="text-xs text-muted-foreground">Developer</p>
+                <p className="text-xs text-white">Developer</p>
                 <p className="text-sm font-medium">{booking.developer}</p>
               </div>
             </div>
@@ -418,7 +418,7 @@ export default function AdminBookingsPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Bookings</h1>
-        <p className="text-muted-foreground">Manage all consultation bookings</p>
+        <p className="text-white">Manage all consultation bookings</p>
       </div>
 
       <DataTable
@@ -485,30 +485,30 @@ export default function AdminBookingsPage() {
 
                 <div className="grid gap-4">
                   <div className="rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-white">
                       <User className="h-4 w-4" />
                       Client
                     </div>
                     <p className="mt-1 font-medium">{selectedBooking.client}</p>
-                    <p className="text-sm text-muted-foreground">{selectedBooking.clientEmail}</p>
+                    <p className="text-sm text-white">{selectedBooking.clientEmail}</p>
                   </div>
                   <div className="rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-white">
                       <Code2 className="h-4 w-4" />
                       Developer
                     </div>
                     <p className="mt-1 font-medium">{selectedBooking.developer}</p>
-                    <p className="text-sm text-muted-foreground">{selectedBooking.developerEmail}</p>
+                    <p className="text-sm text-white">{selectedBooking.developerEmail}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 text-white" />
                     <span>{selectedBooking.date}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Clock className="h-4 w-4 text-white" />
                     <span>{selectedBooking.time} ({selectedBooking.duration})</span>
                   </div>
                 </div>

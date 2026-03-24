@@ -24,8 +24,8 @@ import {
 
 const bottomBarItems = [
   { href: "/user", label: "Home", icon: Home },
-  { href: "/user/bookings", label: "Bookings", icon: Calendar },
-  { href: "/developers", label: "Find", icon: Search },
+  { href: "/user/bookings", label: "Booking", icon: Calendar },
+  { href: "/developers", label: "Find Dev", icon: Search },
   { href: "/user/messages", label: "Messages", icon: MessageSquare },
   { href: "/user/profile", label: "Profile", icon: Users },
 ]
@@ -118,17 +118,17 @@ export default function UserDashboardPage() {
       <main className="pb-20 pt-24 md:pb-8">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           {/* Welcome Section */}
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                   Welcome back, <span className="gradient-text">{firstName}</span>
                 </h1>
-                <p className="mt-1 text-muted-foreground">
+                <p className="mt-1 text-white">
                   Ready to connect with expert developers?
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="w-full flex items-center justify-between gap-2">
                 <Link to="/developers">
                   <Button className="gap-2">
                     <Search className="h-4 w-4" />
@@ -146,21 +146,21 @@ export default function UserDashboardPage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-8 grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: "Upcoming Sessions", value: upcomingBookings.length, icon: Calendar, color: "text-blue-400", bgColor: "bg-blue-500/10" },
               { label: "Completed Sessions", value: recentConsultations.length, icon: Video, color: "text-emerald-400", bgColor: "bg-emerald-500/10" },
               { label: "Active Posts", value: myPosts.length, icon: FileText, color: "text-yellow-400", bgColor: "bg-yellow-500/10" },
               { label: "Messages", value: 5, icon: MessageSquare, color: "text-purple-400", bgColor: "bg-purple-500/10" },
             ].map((stat) => (
-              <Card key={stat.label} className="group border-border transition-all hover:border-primary/30">
+              <Card key={stat.label} className="px-0 py-2 sm:py-4 sm:px-0 group border-border transition-all hover:border-primary/30">
                 <CardContent className="flex items-center gap-4">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.bgColor} transition-transform group-hover:scale-110`}>
                     <stat.icon className={`h-4 w-4 ${stat.color}`} />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-sm text-white">{stat.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -190,9 +190,9 @@ export default function UserDashboardPage() {
                 <CardContent>
                   {upcomingBookings.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12">
-                      <Calendar className="h-12 w-12 text-muted-foreground" />
+                      <Calendar className="h-12 w-12 text-white" />
                       <p className="mt-4 font-medium">No upcoming sessions</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 text-sm text-white">
                         Book a consultation to get started
                       </p>
                       <Link to="/developers">
@@ -214,8 +214,8 @@ export default function UserDashboardPage() {
                             </Avatar>
                             <div>
                               <p className="font-semibold">{booking.developer}</p>
-                              <p className="text-sm text-muted-foreground">{booking.service}</p>
-                              <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                              <p className="text-sm text-white">{booking.service}</p>
+                              <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-white">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="h-3.5 w-3.5" />
                                   {booking.date}
@@ -266,9 +266,9 @@ export default function UserDashboardPage() {
                 <CardContent>
                   {myPosts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12">
-                      <FileText className="h-12 w-12 text-muted-foreground" />
+                      <FileText className="h-12 w-12 text-white" />
                       <p className="mt-4 font-medium">No posts yet</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 text-sm text-white">
                         Post a project to get help from developers
                       </p>
                       <Link to="/posts/create">
@@ -284,7 +284,7 @@ export default function UserDashboardPage() {
                         >
                           <div>
                             <h4 className="font-semibold">{post.title}</h4>
-                            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-white">
                               <span>Posted {post.createdAt}</span>
                               <span className="text-primary font-medium">{post.budget}</span>
                               <span className="flex items-center gap-1">
@@ -334,8 +334,8 @@ export default function UserDashboardPage() {
                             </Avatar>
                             <div>
                               <p className="font-semibold">{consultation.developer}</p>
-                              <p className="text-sm text-muted-foreground">{consultation.service}</p>
-                              <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
+                              <p className="text-sm text-white">{consultation.service}</p>
+                              <div className="mt-1 flex items-center gap-3 text-sm text-white">
                                 <span>{consultation.date}</span>
                                 <span>{consultation.duration}</span>
                               </div>
@@ -401,13 +401,13 @@ export default function UserDashboardPage() {
                                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground truncate">{dev.title}</p>
+                            <p className="text-xs text-white truncate">{dev.title}</p>
                             <div className="mt-1 flex items-center gap-2 text-xs">
                               <span className="flex items-center gap-0.5 text-yellow-400">
                                 <Star className="h-3 w-3 fill-current" />
                                 {dev.rating}
                               </span>
-                              <span className="text-muted-foreground">({dev.reviews})</span>
+                              <span className="text-white">({dev.reviews})</span>
                               <span className="text-primary">{dev.hourlyRate} Kip/hr</span>
                             </div>
                           </div>
@@ -435,9 +435,9 @@ export default function UserDashboardPage() {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">{msg.name}</p>
-                          <p className="truncate text-sm text-muted-foreground">{msg.message}</p>
+                          <p className="truncate text-sm text-white">{msg.message}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground">{msg.time}</span>
+                        <span className="text-xs text-white">{msg.time}</span>
                       </div>
                     ))}
                   </div>
