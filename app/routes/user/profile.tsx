@@ -85,6 +85,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       education: true,
       createdAt: true,
       emailVerified: true,
+      notifyInApp: true,
+      notifyEmail: true,
+      showProfile: true,
     },
   })
 
@@ -273,6 +276,24 @@ export async function action({ request }: Route.ActionArgs) {
     return { intent, success: "Top-up request submitted! Your balance will be updated once approved by admin." }
   }
 
+  // --- Toggle Setting ---
+  if (intent === "toggle-setting") {
+    const field = String(formData.get("field"))
+    const value = formData.get("value") === "true"
+
+    const allowedFields = ["notifyInApp", "notifyEmail", "showProfile"] as const
+    if (!allowedFields.includes(field as (typeof allowedFields)[number])) {
+      return { intent, error: "Invalid setting" }
+    }
+
+    await prisma.user.update({
+      where: { id: session.userId },
+      data: { [field]: value },
+    })
+
+    return { intent, success: "Setting updated" }
+  }
+
   // --- Delete Account (soft delete) ---
   if (intent === "delete-account") {
     await prisma.user.update({
@@ -395,21 +416,18 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {[
-                    { label: "Booking confirmations", description: "Get notified when your booking is confirmed", enabled: true },
-                    { label: "Session reminders", description: "Receive reminders before your sessions", enabled: true },
-                    { label: "New messages", description: "Get notified when you receive a message", enabled: true },
-                    { label: "Post responses", description: "Get notified when developers respond to your posts", enabled: true },
-                    { label: "Promotional emails", description: "Receive updates about new features and offers", enabled: false },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{item.label}</p>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                      </div>
-                      <Switch defaultChecked={item.enabled} />
-                    </div>
-                  ))}
+                  <SettingToggle
+                    field="notifyInApp"
+                    label="In-App notification"
+                    description="Get notified when your booking is confirmed"
+                    defaultValue={user.notifyInApp}
+                  />
+                  <SettingToggle
+                    field="notifyEmail"
+                    label="Email notification"
+                    description="Receive reminders before your sessions"
+                    defaultValue={user.notifyEmail}
+                  />
                 </CardContent>
               </Card>
 
@@ -422,18 +440,12 @@ export default function UserProfilePage({ loaderData }: Route.ComponentProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {[
-                    { label: "Show profile to developers", description: "Allow developers to see your profile information", enabled: true },
-                    { label: "Show online status", description: "Let developers see when you're online", enabled: false },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{item.label}</p>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                      </div>
-                      <Switch defaultChecked={item.enabled} />
-                    </div>
-                  ))}
+                  <SettingToggle
+                    field="showProfile"
+                    label="Show profile to developers"
+                    description="Allow developers to see your profile information"
+                    defaultValue={user.showProfile}
+                  />
                 </CardContent>
               </Card>
 
@@ -779,6 +791,41 @@ function PasswordForm({
   )
 }
 
+// --- Setting Toggle ---
+function SettingToggle({ field, label, description, defaultValue }: {
+  field: string
+  label: string
+  description: string
+  defaultValue: boolean
+}) {
+  const fetcher = useFetcher<typeof action>()
+  const [checked, setChecked] = useState(defaultValue)
+
+  const handleToggle = (value: boolean) => {
+    setChecked(value)
+    fetcher.submit(
+      { intent: "toggle-setting", field, value: String(value) },
+      { method: "post" }
+    )
+  }
+
+  useEffect(() => {
+    if (fetcher.data && "intent" in fetcher.data && fetcher.data.intent === "toggle-setting" && "success" in fetcher.data) {
+      toast.success(`${label} ${checked ? "enabled" : "disabled"}`)
+    }
+  }, [fetcher.data])
+
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="font-medium">{label}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <Switch checked={checked} onCheckedChange={handleToggle} />
+    </div>
+  )
+}
+
 // --- Delete Account Button ---
 function DeleteAccountButton() {
   const fetcher = useFetcher<typeof action>()
@@ -871,18 +918,18 @@ function WalletSection({ pendingTopUps, wallet }: { pendingTopUps: TopUpRequest[
       toast.success("Top-up request submitted! Your balance will be updated once approved by admin.")
       resetTopUp()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcherSuccess])
 
   // Generate quick amounts only when user is typing (not after selecting a quick amount)
   const [pickedQuickAmount, setPickedQuickAmount] = useState(false)
   const quickAmounts = topUpAmount && Number(topUpAmount) > 0 && !pickedQuickAmount
     ? [
-        Number(topUpAmount) * 1000,
-        Number(topUpAmount) * 10000,
-        Number(topUpAmount) * 100000,
-        Number(topUpAmount) * 1000000,
-      ]
+      Number(topUpAmount) * 1000,
+      Number(topUpAmount) * 10000,
+      Number(topUpAmount) * 100000,
+      Number(topUpAmount) * 1000000,
+    ]
     : []
 
   const handleContinue = () => {

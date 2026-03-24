@@ -42,6 +42,9 @@ model User {
   interests         Json?
   career            String?
   education         String?
+  notifyInApp       Boolean         @default(true)
+  notifyEmail       Boolean         @default(true)
+  showProfile       Boolean         @default(true)
   emailVerified     Boolean         @default(false)
   otpCode           String?
   otpExpiry         DateTime?
