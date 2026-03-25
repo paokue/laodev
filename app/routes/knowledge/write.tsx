@@ -236,7 +236,7 @@ export default function WriteKnowledgePage() {
                       placeholder="Article Title..."
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="border-0 bg-transparent text-3xl font-bold placeholder:text-white/50 focus-visible:ring-0 px-0 h-auto py-2"
+                      className="border-0 bg-transparent text-3xl font-bold placeholder:text-muted-foreground/50 focus-visible:ring-0 px-0 h-auto py-2"
                     />
                   </div>
 

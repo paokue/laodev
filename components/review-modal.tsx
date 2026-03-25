@@ -114,8 +114,8 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                     >
                       <Star
                         className={`h-10 w-10 transition-colors ${rating <= (hoveredRating || overallRating)
-                            ? "fill-yellow-500 text-yellow-500"
-                            : "text-white/30"
+                          ? "fill-yellow-500 text-yellow-500"
+                          : "text-white/30"
                           }`}
                       />
                     </button>
@@ -148,8 +148,8 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                           >
                             <Star
                               className={`h-5 w-5 transition-colors ${rating <= categoryRatings[category.id]
-                                  ? "fill-yellow-500 text-yellow-500"
-                                  : "text-white/30"
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-white/30"
                                 }`}
                             />
                           </button>
@@ -191,8 +191,8 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                   <Star
                     key={rating}
                     className={`h-5 w-5 ${rating <= overallRating
-                        ? "fill-yellow-500 text-yellow-500"
-                        : "text-white/30"
+                      ? "fill-yellow-500 text-yellow-500"
+                      : "text-white/30"
                       }`}
                   />
                 ))}
@@ -210,7 +210,7 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                   placeholder="Summarize your experience"
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   maxLength={100}
                 />
               </div>
@@ -281,8 +281,8 @@ export function ReviewModal({ developerName, developerId, children }: ReviewModa
                 <Star
                   key={rating}
                   className={`h-6 w-6 ${rating <= overallRating
-                      ? "fill-yellow-500 text-yellow-500"
-                      : "text-white/30"
+                    ? "fill-yellow-500 text-yellow-500"
+                    : "text-white/30"
                     }`}
                 />
               ))}

@@ -75,6 +75,13 @@ model Developer {
   location       String?
   languages      String[]
   availability   String?
+  gender         String
+  career         String
+  dob            DateTime
+  phone          String
+  profile        String?
+  website        String?
+  github         String?
   status         DeveloperStatus @default(PENDING)
   rating         Float           @default(0)
   reviewCount    Int             @default(0)

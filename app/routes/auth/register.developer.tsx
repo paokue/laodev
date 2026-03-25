@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Link, useNavigate, redirect } from "react-router"
+import { useEffect, useState } from "react"
+import { Link, useFetcher, redirect } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -28,11 +28,18 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
+  Phone,
+  Calendar,
+  GraduationCap,
+  Camera,
 } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Label } from "@/components/ui/label"
 import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/auth.server"
 import { createSession, getUser } from "@/lib/session.server"
 import { generateOtp, sendOtpEmail } from "@/lib/mailer"
+import { uploadToBunny } from "@/lib/bunny.server"
 import type { Route } from "./+types/register.developer"
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -45,43 +52,101 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData()
   const intent = String(formData.get("intent"))
 
+  // Step 1: Send OTP only (fast — no DB writes, no file upload)
   if (intent === "register") {
     const name = String(formData.get("name"))
     const email = String(formData.get("email"))
-    const password = String(formData.get("password"))
 
-    if (!name || !email || !password) return { error: "All fields are required" }
-    if (password.length < 8) return { error: "Password must be at least 8 characters" }
+    if (!name || !email) return { error: "Name and email are required" }
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing && existing.emailVerified) return { error: "An account with this email already exists" }
 
-    const hashedPassword = await hashPassword(password)
     const otp = generateOtp()
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
-    if (existing && !existing.emailVerified) {
-      await prisma.user.update({ where: { email }, data: { name, password: hashedPassword, role: "DEVELOPER", otpCode: otp, otpExpiry } })
+    // Store OTP temporarily on user record (create minimal or update)
+    if (existing) {
+      await prisma.user.update({ where: { email }, data: { otpCode: otp, otpExpiry } })
     } else {
-      await prisma.user.create({ data: { name, email, password: hashedPassword, role: "DEVELOPER", emailVerified: false, otpCode: otp, otpExpiry } })
+      await prisma.user.create({
+        data: { name, email, password: "", role: "DEVELOPER", emailVerified: false, otpCode: otp, otpExpiry },
+      })
     }
 
-    await sendOtpEmail(email, otp, name)
+    // Fire and forget — don't wait for email to finish sending
+    sendOtpEmail(email, otp, name).catch(console.error)
     return { success: true, intent: "register" }
   }
 
+  // Step 2: Verify OTP + save all data to DB
   if (intent === "verify-otp") {
     const email = String(formData.get("email"))
-    const otp = String(formData.get("otp"))
+    const otpValue = String(formData.get("otp"))
+    const name = String(formData.get("name"))
+    const password = String(formData.get("password"))
+    const title = String(formData.get("title"))
+    const location = String(formData.get("location"))
+    const bio = String(formData.get("bio"))
+    const yearsExperience = String(formData.get("yearsExperience"))
+    const hourlyRate = String(formData.get("hourlyRate"))
+    const gender = String(formData.get("gender"))
+    const career = String(formData.get("career"))
+    const dob = String(formData.get("dob"))
+    const phone = String(formData.get("phone"))
+    const profile = String(formData.get("profile") || "")
+    const skills = formData.getAll("skills").map(String)
+    const avatarFile = formData.get("avatar") as File | null
 
+    // Verify OTP
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user || !user.otpCode || !user.otpExpiry) return { error: "Invalid request" }
     if (new Date() > user.otpExpiry) return { error: "OTP has expired" }
-    if (user.otpCode !== otp) return { error: "Invalid OTP code" }
+    if (user.otpCode !== otpValue) return { error: "Invalid OTP code" }
 
-    await prisma.user.update({ where: { email }, data: { emailVerified: true, otpCode: null, otpExpiry: null } })
+    // Run heavy ops in parallel
+    const [hashedPassword, avatarUrl] = await Promise.all([
+      hashPassword(password),
+      avatarFile && avatarFile.size > 0 ? uploadToBunny(avatarFile, "avatars") : Promise.resolve(null),
+    ])
 
-    const cookie = await createSession({ userId: user.id, email: user.email, role: user.role, name: user.name })
+    const dobDate = new Date(dob)
+
+    // Update user with full data
+    const updatedUser = await prisma.user.update({
+      where: { email },
+      data: {
+        name,
+        password: hashedPassword,
+        role: "DEVELOPER",
+        bio,
+        phone,
+        gender,
+        dob: dobDate,
+        career,
+        avatar: avatarUrl,
+        emailVerified: true,
+        otpCode: null,
+        otpExpiry: null,
+      },
+    })
+
+    // Create developer record
+    await prisma.developer.upsert({
+      where: { userId: updatedUser.id },
+      update: {
+        title, skills, hourlyRate: parseFloat(hourlyRate) || 0,
+        experience: parseInt(yearsExperience) || 0,
+        location, gender, career, dob: dobDate, phone, profile: profile || null,
+      },
+      create: {
+        userId: updatedUser.id, title, specialties: [], skills,
+        hourlyRate: parseFloat(hourlyRate) || 0, experience: parseInt(yearsExperience) || 0,
+        location, languages: [], gender, career, dob: dobDate, phone, profile: profile || null,
+      },
+    })
+
+    const cookie = await createSession({ userId: updatedUser.id, email: updatedUser.email, role: updatedUser.role, name: updatedUser.name })
     throw redirect("/register/developer/pending", { headers: { "Set-Cookie": cookie } })
   }
 
@@ -134,23 +199,32 @@ const availableSkills = [
 ]
 
 const locations = [
-  "Vientiane",
+  "Vientiane Capital",
+  "Vientiane Province",
   "Luang Prabang",
   "Savannakhet",
-  "Pakse",
   "Champasak",
   "Xieng Khouang",
-  "Phongsali",
+  "Khammouan",
   "Luang Namtha",
   "Oudomxay",
+  "Bokeo",
+  "Phongsali",
+  "Houaphan",
+  "Saravane",
+  "Sekong",
+  "Attapeu",
+  "Xayabouly",
+  "Bolikhamxai",
+  "Xaisomboun",
   "Other",
 ]
 
 export default function DeveloperRegistrationPage() {
-  const navigate = useNavigate()
+  const fetcher = useFetcher<typeof action>()
   const [step, setStep] = useState(1)
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const isLoading = fetcher.state !== "idle"
   const [formData, setFormData] = useState({
     // Step 1: Account
     name: "",
@@ -163,18 +237,44 @@ export default function DeveloperRegistrationPage() {
     bio: "",
     yearsExperience: "",
     hourlyRate: "",
+    gender: "",
+    career: "",
+    dob: "",
+    phone: "",
+    profile: "",
     // Step 3: Skills
     skills: [] as string[],
   })
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [error, setError] = useState("")
   const [skillSearch, setSkillSearch] = useState("")
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state !== "idle" || !fetcher.data) return
+
+    if ("error" in fetcher.data) {
+      setError(fetcher.data.error as string)
+      return
+    }
+
+    if ("intent" in fetcher.data && fetcher.data.intent === "register") {
+      setStep(4)
+    }
+  }, [fetcher.state, fetcher.data])
 
   const totalSteps = 4
 
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    if (!avatarFile) {
+      setError("Please upload a profile photo")
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
@@ -197,11 +297,27 @@ export default function DeveloperRegistrationPage() {
       setError("Please select your location")
       return
     }
+    if (!formData.gender) {
+      setError("Please select your gender")
+      return
+    }
+    if (!formData.dob) {
+      setError("Please enter your date of birth")
+      return
+    }
+    if (!formData.phone) {
+      setError("Please enter your phone number")
+      return
+    }
+    if (!formData.career) {
+      setError("Please enter your career/job title")
+      return
+    }
 
     setStep(3)
   }
 
-  const handleStep3Submit = async (e: React.FormEvent) => {
+  const handleStep3Submit = (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
@@ -210,22 +326,11 @@ export default function DeveloperRegistrationPage() {
       return
     }
 
-    setIsLoading(true)
     const fd = new FormData()
     fd.set("intent", "register")
     fd.set("name", formData.name)
     fd.set("email", formData.email)
-    fd.set("password", formData.password)
-
-    const res = await fetch("", { method: "POST", body: fd })
-    const result = await res.json()
-    setIsLoading(false)
-
-    if (result.error) {
-      setError(result.error)
-      return
-    }
-    setStep(4)
+    fetcher.submit(fd, { method: "post" })
   }
 
   const handleOtpChange = (index: number, value: string) => {
@@ -248,7 +353,7 @@ export default function DeveloperRegistrationPage() {
     }
   }
 
-  const handleOtpSubmit = async (e: React.FormEvent) => {
+  const handleOtpSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
@@ -258,22 +363,27 @@ export default function DeveloperRegistrationPage() {
       return
     }
 
-    setIsLoading(true)
     const fd = new FormData()
     fd.set("intent", "verify-otp")
-    fd.set("email", formData.email)
     fd.set("otp", otpValue)
-
-    const res = await fetch("", { method: "POST", body: fd })
-    if (res.redirected) {
-      navigate(new URL(res.url).pathname)
-      return
+    fd.set("name", formData.name)
+    fd.set("email", formData.email)
+    fd.set("password", formData.password)
+    fd.set("title", formData.title)
+    fd.set("location", formData.location)
+    fd.set("bio", formData.bio)
+    fd.set("yearsExperience", formData.yearsExperience)
+    fd.set("hourlyRate", formData.hourlyRate)
+    fd.set("gender", formData.gender)
+    fd.set("career", formData.career)
+    fd.set("dob", formData.dob)
+    fd.set("phone", formData.phone)
+    fd.set("profile", formData.profile)
+    formData.skills.forEach((skill) => fd.append("skills", skill))
+    if (avatarFile) {
+      fd.set("avatar", avatarFile)
     }
-    const result = await res.json()
-    setIsLoading(false)
-    if (result.error) {
-      setError(result.error)
-    }
+    fetcher.submit(fd, { method: "post", encType: "multipart/form-data" })
   }
 
   const addSkill = (skill: string) => {
@@ -358,14 +468,38 @@ export default function DeveloperRegistrationPage() {
           {/* Step 1: Account Details */}
           {step === 1 && (
             <Card className="border-border bg-card">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Create Developer Account</CardTitle>
-                <CardDescription>
-                  Join LaoDev and offer your expertise to clients
-                </CardDescription>
-              </CardHeader>
               <CardContent>
                 <form onSubmit={handleStep1Submit} className="space-y-4">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24 border-2 border-border">
+                        {avatarPreview ? (
+                          <AvatarImage src={avatarPreview} alt="Profile" />
+                        ) : null}
+                        <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                          {formData.name
+                            ? formData.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+                            : <User className="h-8 w-8" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <label className="absolute bottom-1 right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-80">
+                        <Camera className="h-3.5 w-3.5" />
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            setAvatarFile(file)
+                            setAvatarPreview(URL.createObjectURL(file))
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Upload profile photo</p>
+                  </div>
+
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium">
                       Full Name <span className="text-rose-500">*</span>
@@ -465,10 +599,12 @@ export default function DeveloperRegistrationPage() {
 
                   {error && <p className="text-sm text-destructive">{error}</p>}
 
-                  <Button type="submit" className="w-full gap-2">
-                    Continue
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <div className="w-full flex items-center justify-end">
+                    <Button type="submit" className="w-auto gap-2">
+                      Continue
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
 
                   <p className="text-center text-sm text-white">
                     Looking for consultations instead?{" "}
@@ -484,17 +620,11 @@ export default function DeveloperRegistrationPage() {
           {/* Step 2: Profile Details */}
           {step === 2 && (
             <Card className="border-border bg-card">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Build Your Profile</CardTitle>
-                <CardDescription>
-                  Tell us about yourself and your expertise
-                </CardDescription>
-              </CardHeader>
               <CardContent>
                 <form onSubmit={handleStep2Submit} className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="title" className="text-sm font-medium">
-                      Professional Title
+                      Professional Title <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <Briefcase className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
@@ -521,8 +651,8 @@ export default function DeveloperRegistrationPage() {
                         setFormData({ ...formData, location: value })
                       }
                     >
-                      <SelectTrigger>
-                        <MapPin className="mr-2 h-4 w-4 text-white" />
+                      <SelectTrigger className="w-full border border-primary/20">
+                        <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
                         <SelectValue placeholder="Select your location" />
                       </SelectTrigger>
                       <SelectContent>
@@ -546,7 +676,7 @@ export default function DeveloperRegistrationPage() {
                           setFormData({ ...formData, yearsExperience: value })
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="border border-primary/20 w-full mt-2">
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
@@ -561,10 +691,10 @@ export default function DeveloperRegistrationPage() {
 
                     <div className="space-y-2">
                       <label htmlFor="hourlyRate" className="text-sm font-medium">
-                        Hourly Rate (USD) <span className="text-rose-500">*</span>
+                        Hourly Rate (Kip) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
+                        <div className="absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" >Lak</div>
                         <Input
                           id="hourlyRate"
                           type="number"
@@ -593,6 +723,106 @@ export default function DeveloperRegistrationPage() {
                       }
                       rows={4}
                       required
+                      className="border border-primary/20"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">
+                        Gender <span className="text-rose-500">*</span>
+                      </Label>
+                      <Select
+                        value={formData.gender}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, gender: value })
+                        }
+                      >
+                        <SelectTrigger className="w-full mt-2 border border-primary/20">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dob">
+                        Date of Birth <span className="text-rose-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="dob"
+                          type="date"
+                          value={formData.dob}
+                          onChange={(e) =>
+                            setFormData({ ...formData, dob: e.target.value })
+                          }
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">
+                        Phone <span className="text-rose-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="020 XXXX XXXX"
+                          value={formData.phone}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="career">
+                        Career <span className="text-rose-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <GraduationCap className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="career"
+                          placeholder="e.g., Software Engineer"
+                          value={formData.career}
+                          onChange={(e) =>
+                            setFormData({ ...formData, career: e.target.value })
+                          }
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="profile">
+                      Profile / Portfolio URL
+                    </Label>
+                    <Input
+                      id="profile"
+                      type="url"
+                      placeholder="https://github.com/username"
+                      value={formData.profile}
+                      onChange={(e) =>
+                        setFormData({ ...formData, profile: e.target.value })
+                      }
                     />
                   </div>
 
@@ -622,7 +852,7 @@ export default function DeveloperRegistrationPage() {
           {step === 3 && (
             <Card className="border-border bg-card">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Select Your Skills <span className="text-rose-500">*</span></CardTitle>
+                <CardTitle className="text-xl">Select Your Skills <span className="text-rose-500">*</span></CardTitle>
                 <CardDescription>
                   Choose at least 3 skills (max 10)
                 </CardDescription>
@@ -635,7 +865,7 @@ export default function DeveloperRegistrationPage() {
                       {formData.skills.map((skill) => (
                         <Badge
                           key={skill}
-                          className="gap-1 bg-primary/20 text-primary hover:bg-primary/30"
+                          className="gap-1 bg-primary/20 text-primary hover:bg-primary/30 border border-primary/50"
                         >
                           {skill}
                           <button
