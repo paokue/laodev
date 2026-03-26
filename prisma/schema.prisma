@@ -167,17 +167,20 @@ model SavedPost {
 }
 
 model Article {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  authorId  String   @db.ObjectId
-  author    User     @relation(fields: [authorId], references: [id])
-  title     String
-  content   String
-  category  String
-  tags      String[]
-  readTime  Int      @default(5)
-  views     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorId   String   @db.ObjectId
+  author     User     @relation(fields: [authorId], references: [id])
+  title      String
+  excerpt    String?
+  content    String
+  category   String
+  tags       String[]
+  coverImage String?
+  status     String   @default("published")
+  readTime   Int      @default(5)
+  views      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("articles")
 }

@@ -1,6 +1,5 @@
-import { useState } from "react"
-import { useNavigate } from "react-router"
-import { Link } from "react-router"
+import { useEffect, useState } from "react"
+import { Form, Link, useActionData, useNavigate, useNavigation } from "react-router"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -37,7 +36,6 @@ import {
   Heading1,
   Heading2,
   Eye,
-  Save,
   Send,
   X,
   Plus,
@@ -46,7 +44,12 @@ import {
   FileText,
   CheckCircle2,
   Info,
+  Loader,
 } from "lucide-react"
+import { toast } from "sonner"
+import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session.server"
+import type { Route } from "./+types/write"
 
 const categories = [
   "Frontend",
@@ -61,16 +64,78 @@ const categories = [
   "Tips & Tricks",
 ]
 
-const currentAuthor = {
-  id: "1",
-  name: "Somsak Phommavong",
-  avatar: "",
-  title: "Senior Full-Stack Developer",
-  isVerified: true,
+// --- Loader: Only developers can write ---
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await requireUser(request, ["DEVELOPER", "ADMIN"])
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      emailVerified: true,
+      developer: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+  })
+
+  if (!user || !user.developer) {
+    throw new Response("Not found", { status: 404 })
+  }
+
+  return { user }
 }
 
-export default function WriteKnowledgePage() {
+// --- Action: Create article ---
+export async function action({ request }: Route.ActionArgs) {
+  const session = await requireUser(request, ["DEVELOPER", "ADMIN"])
+  const formData = await request.formData()
+
+  const title = String(formData.get("title") || "").trim()
+  const excerpt = String(formData.get("excerpt") || "").trim()
+  const content = String(formData.get("content") || "").trim()
+  const category = String(formData.get("category") || "").trim()
+  const tagsRaw = String(formData.get("tags") || "")
+  const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : []
+  const coverImage = String(formData.get("coverImage") || "").trim()
+
+  if (!title || !content || !category) {
+    return { error: "Title, content, and category are required" }
+  }
+
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length
+  const readTime = Math.max(1, Math.ceil(wordCount / 200))
+
+  const article = await prisma.article.create({
+    data: {
+      authorId: session.userId,
+      title,
+      excerpt: excerpt || null,
+      content,
+      category,
+      tags,
+      coverImage: coverImage || null,
+      readTime,
+      status: "published",
+    },
+  })
+
+  return { success: true, articleId: article.id }
+}
+
+// --- Component ---
+export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps) {
+  const { user } = loaderData
+  const actionData = useActionData<typeof action>()
+  const navigation = useNavigation()
   const navigate = useNavigate()
+  const isSubmitting = navigation.state === "submitting"
+
   const [title, setTitle] = useState("")
   const [excerpt, setExcerpt] = useState("")
   const [content, setContent] = useState("")
@@ -79,15 +144,25 @@ export default function WriteKnowledgePage() {
   const [tagInput, setTagInput] = useState("")
   const [coverImage, setCoverImage] = useState("")
   const [isPreview, setIsPreview] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isPublishing, setIsPublishing] = useState(false)
   const [showPublishSuccess, setShowPublishSuccess] = useState(false)
+  const [publishedArticleId, setPublishedArticleId] = useState<string | null>(null)
 
-  const authorInitials = currentAuthor.name
+  const authorInitials = user.name
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
+
+  // Handle success
+  useEffect(() => {
+    if (actionData && "success" in actionData && actionData.success) {
+      setShowPublishSuccess(true)
+      setPublishedArticleId(actionData.articleId)
+    }
+    if (actionData && "error" in actionData) {
+      toast.error(actionData.error)
+    }
+  }, [actionData])
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim()) && tags.length < 5) {
@@ -154,19 +229,6 @@ export default function WriteKnowledgePage() {
     setContent(content.substring(0, start) + newText + content.substring(end))
   }
 
-  const handleSaveDraft = async () => {
-    setIsSaving(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsSaving(false)
-  }
-
-  const handlePublish = async () => {
-    setIsPublishing(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsPublishing(false)
-    setShowPublishSuccess(true)
-  }
-
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
 
@@ -204,403 +266,423 @@ export default function WriteKnowledgePage() {
                 {isPreview ? "Edit" : "Preview"}
               </Button>
               <Button
-                variant="outline"
                 size="sm"
-                onClick={handleSaveDraft}
-                disabled={isSaving}
-                className="gap-2 border-border"
-              >
-                <Save className="h-4 w-4" />
-                {isSaving ? "Saving..." : "Save Draft"}
-              </Button>
-              <Button
-                size="sm"
-                onClick={handlePublish}
-                disabled={!title || !content || !category || isPublishing}
+                type="submit"
+                form="write-article-form"
+                disabled={!title || !content || !category || isSubmitting}
                 className="gap-2"
               >
-                <Send className="h-4 w-4" />
-                {isPublishing ? "Publishing..." : "Publish"}
+                {isSubmitting ? (
+                  <>
+                    <Loader className="h-4 w-4 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Publish
+                  </>
+                )}
               </Button>
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-3">
-            {/* Main Editor */}
-            <div className="lg:col-span-2 space-y-6">
-              {!isPreview ? (
-                <>
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Article Title..."
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="border-0 bg-transparent text-3xl font-bold placeholder:text-muted-foreground/50 focus-visible:ring-0 px-0 h-auto py-2"
-                    />
-                  </div>
+          <Form method="post" id="write-article-form">
+            <input type="hidden" name="tags" value={tags.join(",")} />
+            <input type="hidden" name="coverImage" value={coverImage} />
+            <input type="hidden" name="category" value={category} />
 
-                  {/* Excerpt */}
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Write a brief excerpt or summary (shown in article previews)..."
-                      value={excerpt}
-                      onChange={(e) => setExcerpt(e.target.value)}
-                      className="min-h-[80px] resize-none border-border bg-card/50 focus:border-primary/50"
-                    />
-                    <p className="text-xs text-white">{excerpt.length}/200 characters</p>
-                  </div>
-
-                  {/* Toolbar */}
-                  <div className="flex flex-wrap items-center gap-1 p-2 rounded-lg bg-card/50 border border-border">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("h1")}
-                      className="h-8 w-8 p-0"
-                      title="Heading"
-                    >
-                      <Heading1 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("h2")}
-                      className="h-8 w-8 p-0"
-                      title="Subheading"
-                    >
-                      <Heading2 className="h-4 w-4" />
-                    </Button>
-                    <div className="h-5 w-px bg-border mx-1" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("bold")}
-                      className="h-8 w-8 p-0"
-                      title="Bold"
-                    >
-                      <Bold className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("italic")}
-                      className="h-8 w-8 p-0"
-                      title="Italic"
-                    >
-                      <Italic className="h-4 w-4" />
-                    </Button>
-                    <div className="h-5 w-px bg-border mx-1" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("list")}
-                      className="h-8 w-8 p-0"
-                      title="Bullet List"
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("ordered")}
-                      className="h-8 w-8 p-0"
-                      title="Numbered List"
-                    >
-                      <ListOrdered className="h-4 w-4" />
-                    </Button>
-                    <div className="h-5 w-px bg-border mx-1" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("code")}
-                      className="h-8 w-8 p-0"
-                      title="Code Block"
-                    >
-                      <Code className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("quote")}
-                      className="h-8 w-8 p-0"
-                      title="Quote"
-                    >
-                      <Quote className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("link")}
-                      className="h-8 w-8 p-0"
-                      title="Link"
-                    >
-                      <Link2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => insertMarkdown("image")}
-                      className="h-8 w-8 p-0"
-                      title="Image"
-                    >
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Content Editor */}
-                  <Textarea
-                    name="content"
-                    placeholder="Write your article content here... Use Markdown for formatting."
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="min-h-[500px] resize-none border-border bg-card/50 focus:border-primary/50 font-mono text-sm leading-relaxed"
-                  />
-
-                  {/* Word Count */}
-                  <div className="flex items-center justify-between text-sm text-white">
-                    <span>{wordCount} words</span>
-                    <span>{readTime} min read</span>
-                  </div>
-                </>
-              ) : (
-                /* Preview Mode */
-                <Card className="border-border bg-card/50">
-                  <CardContent className="p-8">
-                    <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary">
-                      {category || "Category"}
-                    </Badge>
-                    <h1 className="text-3xl font-bold">{title || "Article Title"}</h1>
-                    <p className="mt-4 text-lg text-white">
-                      {excerpt || "Article excerpt will appear here..."}
-                    </p>
-
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      {tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="border-border">
-                          {tag}
-                        </Badge>
-                      ))}
+            <div className="grid gap-8 lg:grid-cols-3">
+              {/* Main Editor */}
+              <div className="lg:col-span-2 space-y-6">
+                {!isPreview ? (
+                  <>
+                    {/* Title */}
+                    <div className="space-y-2">
+                      <Input
+                        name="title"
+                        placeholder="Article Title..."
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="border-0 bg-transparent text-3xl font-bold placeholder:text-muted-foreground/50 focus-visible:ring-0 px-0 h-auto py-2"
+                      />
                     </div>
 
-                    <div className="mt-8 flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-                      <Avatar className="h-12 w-12 border border-border">
-                        <AvatarImage src={currentAuthor.avatar} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary">
+                    {/* Excerpt */}
+                    <div className="space-y-2">
+                      <Textarea
+                        name="excerpt"
+                        placeholder="Write a brief excerpt or summary (shown in article previews)..."
+                        value={excerpt}
+                        onChange={(e) => setExcerpt(e.target.value)}
+                        className="min-h-[80px] resize-none border-border bg-card/50 focus:border-primary/50"
+                      />
+                      <p className="text-xs text-white">{excerpt.length}/200 characters</p>
+                    </div>
+
+                    {/* Toolbar */}
+                    <div className="flex flex-wrap items-center gap-1 p-2 rounded-lg bg-card/50 border border-border">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("h1")}
+                        className="h-8 w-8 p-0"
+                        title="Heading"
+                      >
+                        <Heading1 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("h2")}
+                        className="h-8 w-8 p-0"
+                        title="Subheading"
+                      >
+                        <Heading2 className="h-4 w-4" />
+                      </Button>
+                      <div className="h-5 w-px bg-border mx-1" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("bold")}
+                        className="h-8 w-8 p-0"
+                        title="Bold"
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("italic")}
+                        className="h-8 w-8 p-0"
+                        title="Italic"
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <div className="h-5 w-px bg-border mx-1" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("list")}
+                        className="h-8 w-8 p-0"
+                        title="Bullet List"
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("ordered")}
+                        className="h-8 w-8 p-0"
+                        title="Numbered List"
+                      >
+                        <ListOrdered className="h-4 w-4" />
+                      </Button>
+                      <div className="h-5 w-px bg-border mx-1" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("code")}
+                        className="h-8 w-8 p-0"
+                        title="Code Block"
+                      >
+                        <Code className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("quote")}
+                        className="h-8 w-8 p-0"
+                        title="Quote"
+                      >
+                        <Quote className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("link")}
+                        className="h-8 w-8 p-0"
+                        title="Link"
+                      >
+                        <Link2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => insertMarkdown("image")}
+                        className="h-8 w-8 p-0"
+                        title="Image"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Content Editor */}
+                    <Textarea
+                      name="content"
+                      placeholder="Write your article content here... Use Markdown for formatting."
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      className="min-h-[500px] resize-none border-border bg-card/50 focus:border-primary/50 font-mono text-sm leading-relaxed"
+                    />
+
+                    {/* Word Count */}
+                    <div className="flex items-center justify-between text-sm text-white">
+                      <span>{wordCount} words</span>
+                      <span>{readTime} min read</span>
+                    </div>
+                  </>
+                ) : (
+                  /* Preview Mode */
+                  <Card className="border-border bg-card/50">
+                    <CardContent className="p-8">
+                      <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary">
+                        {category || "Category"}
+                      </Badge>
+                      <h1 className="text-3xl font-bold">{title || "Article Title"}</h1>
+                      <p className="mt-4 text-lg text-white">
+                        {excerpt || "Article excerpt will appear here..."}
+                      </p>
+
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        {tags.map((tag) => (
+                          <Badge key={tag} variant="outline" className="border-border">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <div className="mt-8 flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
+                        <Avatar className="h-12 w-12 border border-border">
+                          {user.avatar && <AvatarImage src={user.avatar} />}
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary">
+                            {authorInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{user.name}</span>
+                            {user.emailVerified && (
+                              <CheckCircle2 className="h-4 w-4 text-primary" />
+                            )}
+                          </div>
+                          <p className="text-sm text-white">{readTime} min read</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-8 prose prose-invert max-w-none">
+                        <div className="whitespace-pre-line text-white/90 leading-relaxed">
+                          {content.split("\n").map((line, i) => {
+                            if (line.startsWith("## ")) {
+                              return (
+                                <h2 key={i} className="text-2xl font-bold mt-8 mb-4 text-white">
+                                  {line.replace("## ", "")}
+                                </h2>
+                              )
+                            }
+                            if (line.startsWith("### ")) {
+                              return (
+                                <h3 key={i} className="text-xl font-bold mt-6 mb-3 text-white">
+                                  {line.replace("### ", "")}
+                                </h3>
+                              )
+                            }
+                            if (line.startsWith("- ")) {
+                              return (
+                                <li key={i} className="ml-6 text-white/80">
+                                  {line.replace("- ", "")}
+                                </li>
+                              )
+                            }
+                            if (line.startsWith("> ")) {
+                              return (
+                                <blockquote
+                                  key={i}
+                                  className="border-l-4 border-primary pl-4 italic text-white my-4"
+                                >
+                                  {line.replace("> ", "")}
+                                </blockquote>
+                              )
+                            }
+                            if (line.trim() === "") {
+                              return <br key={i} />
+                            }
+                            return (
+                              <p key={i} className="my-4 text-white/80">
+                                {line}
+                              </p>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Author Card */}
+                <Card className="border-border bg-card/50">
+                  <CardContent className="p-4">
+                    <h3 className="text-sm font-medium text-white mb-3">Publishing as</h3>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border border-border">
+                        {user.avatar && <AvatarImage src={user.avatar} />}
+                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary text-sm">
                           {authorInitials}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold">{currentAuthor.name}</span>
-                          {currentAuthor.isVerified && (
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium">{user.name}</span>
+                          {user.emailVerified && (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                           )}
                         </div>
-                        <p className="text-sm text-white">{readTime} min read</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-8 prose prose-invert max-w-none">
-                      <div className="whitespace-pre-line text-white/90 leading-relaxed">
-                        {content.split("\n").map((line, i) => {
-                          if (line.startsWith("## ")) {
-                            return (
-                              <h2 key={i} className="text-2xl font-bold mt-8 mb-4 text-white">
-                                {line.replace("## ", "")}
-                              </h2>
-                            )
-                          }
-                          if (line.startsWith("### ")) {
-                            return (
-                              <h3 key={i} className="text-xl font-bold mt-6 mb-3 text-white">
-                                {line.replace("### ", "")}
-                              </h3>
-                            )
-                          }
-                          if (line.startsWith("- ")) {
-                            return (
-                              <li key={i} className="ml-6 text-white/80">
-                                {line.replace("- ", "")}
-                              </li>
-                            )
-                          }
-                          if (line.startsWith("> ")) {
-                            return (
-                              <blockquote
-                                key={i}
-                                className="border-l-4 border-primary pl-4 italic text-white my-4"
-                              >
-                                {line.replace("> ", "")}
-                              </blockquote>
-                            )
-                          }
-                          if (line.trim() === "") {
-                            return <br key={i} />
-                          }
-                          return (
-                            <p key={i} className="my-4 text-white/80">
-                              {line}
-                            </p>
-                          )
-                        })}
+                        <p className="text-xs text-white">{user.developer?.title}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )}
-            </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Author Card */}
-              <Card className="border-border bg-card/50">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-medium text-white mb-3">Publishing as</h3>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border border-border">
-                      <AvatarImage src={currentAuthor.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary text-sm">
-                        {authorInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium">{currentAuthor.name}</span>
-                        {currentAuthor.isVerified && (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                        )}
+                {/* Category */}
+                <Card className="border-border bg-card/50">
+                  <CardContent className="p-4 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Category *</Label>
+                      <Select value={category} onValueChange={setCategory}>
+                        <SelectTrigger className="border-border bg-card">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent className="border-border bg-card/95 backdrop-blur-xl">
+                          {categories.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Tags (max 5)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add tag..."
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          className="border-border bg-card"
+                          disabled={tags.length >= 5}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          type="button"
+                          onClick={handleAddTag}
+                          disabled={tags.length >= 5 || !tagInput.trim()}
+                          className="border-border shrink-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <p className="text-xs text-white">{currentAuthor.title}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Category */}
-              <Card className="border-border bg-card/50">
-                <CardContent className="p-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Category *</Label>
-                    <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger className="border-border bg-card">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="border-border bg-card/95 backdrop-blur-xl">
-                        {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Tags */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Tags (max 5)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Add tag..."
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="border-border bg-card"
-                        disabled={tags.length >= 5}
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleAddTag}
-                        disabled={tags.length >= 5 || !tagInput.trim()}
-                        className="border-border shrink-0"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {tags.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="secondary"
-                            className="gap-1 bg-primary/10 text-primary pr-1"
-                          >
-                            {tag}
-                            <button
-                              onClick={() => handleRemoveTag(tag)}
-                              className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
+                      {tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {tags.map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="gap-1 bg-primary/10 text-primary pr-1"
                             >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTag(tag)}
+                                className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cover Image */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Cover Image URL (optional)</Label>
+                      <Input
+                        placeholder="https://example.com/image.jpg"
+                        value={coverImage}
+                        onChange={(e) => setCoverImage(e.target.value)}
+                        className="border-border bg-card"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Coffee Info */}
+                <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-card">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-full bg-amber-500/20 p-2">
+                        <Coffee className="h-5 w-5 text-amber-500" />
                       </div>
-                    )}
-                  </div>
-
-                  {/* Cover Image */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Cover Image URL (optional)</Label>
-                    <Input
-                      placeholder="https://example.com/image.jpg"
-                      value={coverImage}
-                      onChange={(e) => setCoverImage(e.target.value)}
-                      className="border-border bg-card"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Coffee Info */}
-              <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-card">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-amber-500/20 p-2">
-                      <Coffee className="h-5 w-5 text-amber-500" />
+                      <div>
+                        <h3 className="font-medium flex items-center gap-2">
+                          Earn Coffee Tips
+                          <Sparkles className="h-4 w-4 text-amber-500" />
+                        </h3>
+                        <p className="text-sm text-white mt-1">
+                          Share valuable knowledge and readers can show appreciation by buying you a coffee.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-medium flex items-center gap-2">
-                        Earn Coffee Tips
-                        <Sparkles className="h-4 w-4 text-amber-500" />
-                      </h3>
-                      <p className="text-sm text-white mt-1">
-                        Share valuable knowledge and readers can show appreciation by buying you a coffee.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              {/* Tips */}
-              <Card className="border-border bg-card/50">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
-                    <Info className="h-4 w-4 text-primary" />
-                    Writing Tips
-                  </h3>
-                  <ul className="space-y-2 text-sm text-white">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      Use clear headings to structure your content
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      Include code examples when relevant
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      Add relevant tags to help readers find your article
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      Write a compelling excerpt for previews
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+                {/* Tips */}
+                <Card className="border-border bg-card/50">
+                  <CardContent className="p-4">
+                    <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
+                      <Info className="h-4 w-4 text-primary" />
+                      Writing Tips
+                    </h3>
+                    <ul className="space-y-2 text-sm text-white">
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        Use clear headings to structure your content
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        Include code examples when relevant
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        Add relevant tags to help readers find your article
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        Write a compelling excerpt for previews
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          </Form>
         </div>
       </main>
 
@@ -621,7 +703,7 @@ export default function WriteKnowledgePage() {
               <Button variant="outline" onClick={() => navigate("/knowledge")} className="border-border">
                 View All Articles
               </Button>
-              <Button onClick={() => navigate("/knowledge/1")}>
+              <Button onClick={() => navigate(`/knowledge/${publishedArticleId}`)}>
                 View Article
               </Button>
             </div>

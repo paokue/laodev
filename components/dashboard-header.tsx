@@ -45,6 +45,7 @@ const userMenuItems: { href: string; label: string; icon: LucideIcon }[] = [
 const developerMenuItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/developer", label: "Dashboard", icon: LayoutDashboard },
   { href: "/developer/bookings", label: "My Bookings", icon: Calendar },
+  { href: "/developer/articles", label: "My Articles", icon: FileText },
   { href: "/developer/earnings", label: "Earnings", icon: DollarSign },
   { href: "/developer/messages", label: "Messages", icon: MessageSquare },
   { href: "/developer/profile", label: "Profile", icon: User },

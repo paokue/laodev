@@ -39,6 +39,7 @@ export default [
   layout("routes/developer/layout.tsx", [
     route("/developer", "routes/developer/dashboard.tsx"),
     route("/developer/bookings", "routes/developer/bookings.tsx"),
+    route("/developer/articles", "routes/developer/articles.tsx"),
     route("/developer/messages", "routes/developer/messages.tsx"),
     route("/developer/profile", "routes/developer/profile.tsx"),
     route("/developer/earnings", "routes/developer/earnings.tsx"),
