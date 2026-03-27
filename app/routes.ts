@@ -45,7 +45,11 @@ export default [
     route("/developer/earnings", "routes/developer/earnings.tsx"),
   ]),
 
-  // Admin routes (with layout)
+  // Admin auth (outside layout — no sidebar)
+  route("/admin/login", "routes/admin/login.tsx"),
+  route("/admin/logout", "routes/admin/logout.tsx"),
+
+  // Admin routes (with layout — protected by admin session)
   layout("routes/admin/layout.tsx", [
     route("/admin", "routes/admin/dashboard.tsx"),
     route("/admin/developers", "routes/admin/developers.tsx"),

@@ -17,6 +17,8 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { requireAdmin } from "@/lib/admin-session.server"
+import type { Route } from "./+types/layout"
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -29,9 +31,21 @@ const sidebarLinks = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
-export default function AdminLayout() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const admin = await requireAdmin(request)
+  return { admin }
+}
+
+export default function AdminLayout({ loaderData }: Route.ComponentProps) {
+  const { admin } = loaderData
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const initials = admin.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -83,21 +97,19 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        {/* User Section */}
+        {/* Admin User Section */}
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-primary text-primary-foreground">
-                AD
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium">Admin User</p>
-              <p className="truncate text-xs text-white">
-                admin@laodev.la
-              </p>
+              <p className="truncate text-sm font-medium">{admin.name}</p>
+              <p className="truncate text-xs text-white">{admin.email}</p>
             </div>
-            <Link to="/login">
+            <Link to="/admin/logout">
               <Button variant="ghost" size="sm">
                 <LogOut className="h-4 w-4" />
               </Button>

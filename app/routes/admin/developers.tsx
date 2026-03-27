@@ -22,7 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { DataTable, Column, FilterOption } from "@/components/admin/data-table"
 import { prisma } from "@/lib/prisma"
-import { requireUser } from "@/lib/session.server"
+import { requireAdmin } from "@/lib/admin-session.server"
 import { toast } from "sonner"
 import type { Route } from "./+types/developers"
 import {
@@ -73,7 +73,7 @@ function timeAgo(date: Date): string {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireUser(request, ["ADMIN"])
+  await requireAdmin(request)
 
   const developers = await prisma.developer.findMany({
     orderBy: { createdAt: "desc" },
@@ -120,7 +120,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  await requireUser(request, ["ADMIN"])
+  await requireAdmin(request)
   const formData = await request.formData()
   const intent = String(formData.get("intent"))
   const developerId = String(formData.get("developerId"))

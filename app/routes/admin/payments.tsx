@@ -1,8 +1,10 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useFetcher } from "react-router"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -19,366 +21,329 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DataTable, Column, FilterOption } from "@/components/admin/data-table"
+import { prisma } from "@/lib/prisma"
+import { requireAdmin } from "@/lib/admin-session.server"
+import { sendTopUpStatusEmail } from "@/lib/mailer"
+import { toast } from "sonner"
+import type { Route } from "./+types/payments"
 import {
   MoreHorizontal,
   Eye,
-  Download,
-  RefreshCw,
+  CheckCircle2,
+  XCircle,
   DollarSign,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-  CreditCard,
   Wallet,
-  Receipt,
+  Clock,
+  ImageIcon,
+  Loader,
 } from "lucide-react"
 
-interface Payment {
+interface TopUpItem {
   id: string
-  transactionId: string
-  payer: string
-  payerEmail: string
-  recipient: string
-  recipientEmail: string
-  type: "booking" | "subscription" | "refund" | "payout"
+  userName: string
+  userEmail: string
   amount: number
-  fee: number
-  netAmount: number
-  status: "completed" | "pending" | "failed" | "refunded"
-  method: "card" | "bank" | "wallet"
+  slipUrl: string
+  status: "PENDING" | "APPROVED" | "REJECTED"
   createdAt: string
-  description: string
 }
 
-const payments: Payment[] = [
-  {
-    id: "1",
-    transactionId: "TXN-001234",
-    payer: "Bounmy Khamphouthong",
-    payerEmail: "bounmy@email.com",
-    recipient: "Somsak Phommavong",
-    recipientEmail: "somsak@email.com",
-    type: "booking",
-    amount: 45,
-    fee: 4.5,
-    netAmount: 40.5,
-    status: "completed",
-    method: "card",
-    createdAt: "2024-03-25 10:30 AM",
-    description: "Code Review Session",
-  },
-  {
-    id: "2",
-    transactionId: "TXN-001235",
-    payer: "Viengkham Thammavong",
-    payerEmail: "viengkham@email.com",
-    recipient: "Keo Bounsavath",
-    recipientEmail: "keo@email.com",
-    type: "booking",
-    amount: 80,
-    fee: 8,
-    netAmount: 72,
-    status: "pending",
-    method: "card",
-    createdAt: "2024-03-25 09:15 AM",
-    description: "Mentorship Session",
-  },
-  {
-    id: "3",
-    transactionId: "TXN-001236",
-    payer: "LaoDev Platform",
-    payerEmail: "platform@laodev.la",
-    recipient: "Somsak Phommavong",
-    recipientEmail: "somsak@email.com",
-    type: "payout",
-    amount: 450,
-    fee: 0,
-    netAmount: 450,
-    status: "completed",
-    method: "bank",
-    createdAt: "2024-03-24 03:00 PM",
-    description: "Weekly Payout",
-  },
-  {
-    id: "4",
-    transactionId: "TXN-001237",
-    payer: "Manivanh Souphanthong",
-    payerEmail: "manivanh@email.com",
-    recipient: "LaoDev Platform",
-    recipientEmail: "platform@laodev.la",
-    type: "refund",
-    amount: 55,
-    fee: 0,
-    netAmount: 55,
-    status: "refunded",
-    method: "card",
-    createdAt: "2024-03-24 11:45 AM",
-    description: "Cancelled Booking Refund",
-  },
-  {
-    id: "5",
-    transactionId: "TXN-001238",
-    payer: "Thongphet Vongsavath",
-    payerEmail: "thongphet@email.com",
-    recipient: "Khamla Phommachan",
-    recipientEmail: "khamla@email.com",
-    type: "booking",
-    amount: 25,
-    fee: 2.5,
-    netAmount: 22.5,
-    status: "completed",
-    method: "wallet",
-    createdAt: "2024-03-23 02:30 PM",
-    description: "Career Advice Session",
-  },
-  {
-    id: "6",
-    transactionId: "TXN-001239",
-    payer: "Phouthone Keomany",
-    payerEmail: "phouthone@email.com",
-    recipient: "Keo Bounsavath",
-    recipientEmail: "keo@email.com",
-    type: "booking",
-    amount: 40,
-    fee: 4,
-    netAmount: 36,
-    status: "failed",
-    method: "card",
-    createdAt: "2024-03-23 10:00 AM",
-    description: "Code Review Session",
-  },
-]
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireAdmin(request)
 
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "12,450 Kip",
-    change: "+15%",
-    trend: "up",
-    icon: DollarSign,
-  },
-  {
-    title: "Platform Fees",
-    value: "1,245 Kip",
-    change: "+12%",
-    trend: "up",
-    icon: Receipt,
-  },
-  {
-    title: "Pending Payouts",
-    value: "2,340 Kip",
-    change: "-5%",
-    trend: "down",
-    icon: Wallet,
-  },
-  {
-    title: "Transactions",
-    value: "234",
-    change: "+23%",
-    trend: "up",
-    icon: CreditCard,
-  },
-]
+  const topUpRequests = await prisma.topUpRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      userId: true,
+      amount: true,
+      slipUrl: true,
+      status: true,
+      createdAt: true,
+    },
+  })
 
-export default function AdminPaymentsPage() {
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
-  const [localPayments] = useState(payments)
+  // Fetch user info for all requests
+  const userIds = [...new Set(topUpRequests.map((r) => r.userId))]
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, name: true, email: true },
+  })
+  const userMap = new Map(users.map((u) => [u.id, u]))
+
+  const items: TopUpItem[] = topUpRequests.map((r) => {
+    const user = userMap.get(r.userId)
+    return {
+      id: r.id,
+      userName: user?.name || "Unknown",
+      userEmail: user?.email || "",
+      amount: r.amount,
+      slipUrl: r.slipUrl,
+      status: r.status,
+      createdAt: new Date(r.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    }
+  })
+
+  // Stats
+  const pendingCount = items.filter((i) => i.status === "PENDING").length
+  const approvedCount = items.filter((i) => i.status === "APPROVED").length
+  const rejectedCount = items.filter((i) => i.status === "REJECTED").length
+  const totalApproved = items
+    .filter((i) => i.status === "APPROVED")
+    .reduce((sum, i) => sum + i.amount, 0)
+
+  return {
+    items,
+    stats: { pendingCount, approvedCount, rejectedCount, totalApproved },
+  }
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  await requireAdmin(request)
+  const formData = await request.formData()
+  const intent = String(formData.get("intent"))
+  const requestId = String(formData.get("requestId"))
+
+  const topUpRequest = await prisma.topUpRequest.findUnique({
+    where: { id: requestId },
+  })
+  if (!topUpRequest) return { error: "Top-up request not found" }
+
+  const user = await prisma.user.findUnique({
+    where: { id: topUpRequest.userId },
+    select: { name: true, email: true },
+  })
+
+  if (intent === "approve") {
+    // Update status
+    await prisma.topUpRequest.update({
+      where: { id: requestId },
+      data: { status: "APPROVED" },
+    })
+
+    // Upsert wallet and add balance
+    const wallet = await prisma.wallet.upsert({
+      where: { userId: topUpRequest.userId },
+      create: {
+        userId: topUpRequest.userId,
+        balance: topUpRequest.amount,
+      },
+      update: {
+        balance: { increment: topUpRequest.amount },
+      },
+    })
+
+    // Create wallet transaction record
+    await prisma.walletTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type: "TOP_UP",
+        amount: topUpRequest.amount,
+        description: `Top-up approved - ${topUpRequest.amount.toLocaleString()} Kip`,
+      },
+    })
+
+    // Send email notification
+    if (user) {
+      try {
+        await sendTopUpStatusEmail(user.email, user.name, topUpRequest.amount, "APPROVED")
+      } catch (e) {
+        console.error("Failed to send approval email:", e)
+      }
+    }
+
+    return { success: "Top-up approved and balance updated" }
+  }
+
+  if (intent === "reject") {
+    const reason = String(formData.get("reason") || "").trim()
+
+    await prisma.topUpRequest.update({
+      where: { id: requestId },
+      data: { status: "REJECTED" },
+    })
+
+    // Send email notification
+    if (user) {
+      try {
+        await sendTopUpStatusEmail(user.email, user.name, topUpRequest.amount, "REJECTED", reason)
+      } catch (e) {
+        console.error("Failed to send rejection email:", e)
+      }
+    }
+
+    return { success: "Top-up rejected" }
+  }
+
+  return { error: "Invalid action" }
+}
+
+export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) {
+  const { items, stats } = loaderData
+  const [selectedRequest, setSelectedRequest] = useState<TopUpItem | null>(null)
+  const [showRejectDialog, setShowRejectDialog] = useState(false)
+  const [rejectReason, setRejectReason] = useState("")
+  const [slipPreview, setSlipPreview] = useState<string | null>(null)
+  const fetcher = useFetcher<typeof action>()
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      toast.success(fetcher.data.success)
+      setSelectedRequest(null)
+      setShowRejectDialog(false)
+      setRejectReason("")
+    }
+    if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data])
+
+  const isProcessing = fetcher.state !== "idle"
+
+  const handleApprove = (id: string) => {
+    fetcher.submit({ intent: "approve", requestId: id }, { method: "post" })
+  }
+
+  const handleReject = () => {
+    if (!selectedRequest) return
+    fetcher.submit(
+      { intent: "reject", requestId: selectedRequest.id, reason: rejectReason },
+      { method: "post" }
+    )
+  }
+
+  const getStatusBadge = (status: TopUpItem["status"]) => {
+    switch (status) {
+      case "PENDING":
+        return (
+          <Badge variant="outline" className="border-yellow-500/50 bg-yellow-500/10 text-yellow-500">
+            <Clock className="mr-1 h-3 w-3" />
+            Pending
+          </Badge>
+        )
+      case "APPROVED":
+        return (
+          <Badge variant="outline" className="border-emerald-500/50 bg-emerald-500/10 text-emerald-500">
+            <CheckCircle2 className="mr-1 h-3 w-3" />
+            Approved
+          </Badge>
+        )
+      case "REJECTED":
+        return (
+          <Badge variant="outline" className="border-destructive/50 bg-destructive/10 text-destructive">
+            <XCircle className="mr-1 h-3 w-3" />
+            Rejected
+          </Badge>
+        )
+    }
+  }
 
   const filters: FilterOption[] = [
     {
       key: "status",
       label: "Status",
       options: [
-        { value: "completed", label: "Completed" },
-        { value: "pending", label: "Pending" },
-        { value: "failed", label: "Failed" },
-        { value: "refunded", label: "Refunded" },
-      ],
-    },
-    {
-      key: "type",
-      label: "Type",
-      options: [
-        { value: "booking", label: "Booking" },
-        { value: "payout", label: "Payout" },
-        { value: "refund", label: "Refund" },
-        { value: "subscription", label: "Subscription" },
-      ],
-    },
-    {
-      key: "method",
-      label: "Payment Method",
-      options: [
-        { value: "card", label: "Card" },
-        { value: "bank", label: "Bank Transfer" },
-        { value: "wallet", label: "Wallet" },
+        { value: "PENDING", label: "Pending" },
+        { value: "APPROVED", label: "Approved" },
+        { value: "REJECTED", label: "Rejected" },
       ],
     },
   ]
 
-  const getStatusBadge = (status: Payment["status"]) => {
-    switch (status) {
-      case "completed":
-        return (
-          <Badge variant="outline" className="border-emerald-500/50 bg-emerald-500/10 text-emerald-500">
-            Completed
-          </Badge>
-        )
-      case "pending":
-        return (
-          <Badge variant="outline" className="border-yellow-500/50 bg-yellow-500/10 text-yellow-500">
-            Pending
-          </Badge>
-        )
-      case "failed":
-        return (
-          <Badge variant="outline" className="border-destructive/50 bg-destructive/10 text-destructive">
-            Failed
-          </Badge>
-        )
-      case "refunded":
-        return (
-          <Badge variant="outline" className="border-blue-500/50 bg-blue-500/10 text-blue-500">
-            Refunded
-          </Badge>
-        )
-    }
-  }
-
-  const getTypeBadge = (type: Payment["type"]) => {
-    switch (type) {
-      case "booking":
-        return <Badge>Booking</Badge>
-      case "payout":
-        return <Badge variant="secondary">Payout</Badge>
-      case "refund":
-        return <Badge variant="outline">Refund</Badge>
-      case "subscription":
-        return <Badge className="bg-primary/20 text-primary">Subscription</Badge>
-    }
-  }
-
-  const getMethodIcon = (method: Payment["method"]) => {
-    switch (method) {
-      case "card":
-        return <CreditCard className="h-4 w-4" />
-      case "bank":
-        return <DollarSign className="h-4 w-4" />
-      case "wallet":
-        return <Wallet className="h-4 w-4" />
-    }
-  }
-
-  const columns: Column<Payment>[] = [
+  const columns: Column<TopUpItem>[] = [
     {
-      key: "transactionId",
-      label: "Transaction",
+      key: "userName",
+      label: "User",
       sortable: true,
-      render: (payment) => (
-        <div>
-          <p className="font-mono text-sm font-medium">{payment.transactionId}</p>
-          <p className="text-xs text-white">{payment.createdAt}</p>
-        </div>
-      ),
-    },
-    {
-      key: "payer",
-      label: "From",
-      sortable: true,
-      render: (payment) => (
-        <div className="flex items-center gap-2">
-          <Avatar className="h-7 w-7">
-            <AvatarFallback className="text-xs">
-              {payment.payer.split(" ").map((n) => n[0]).join("")}
+      render: (req) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+              {req.userName.split(" ").map((n) => n[0]).join("")}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm">{payment.payer}</span>
+          <div>
+            <p className="font-medium text-sm">{req.userName}</p>
+            <p className="text-xs text-white">{req.userEmail}</p>
+          </div>
         </div>
       ),
-    },
-    {
-      key: "recipient",
-      label: "To",
-      sortable: true,
-      render: (payment) => (
-        <div className="flex items-center gap-2">
-          <Avatar className="h-7 w-7">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs">
-              {payment.recipient.split(" ").map((n) => n[0]).join("")}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-sm">{payment.recipient}</span>
-        </div>
-      ),
-    },
-    {
-      key: "type",
-      label: "Type",
-      sortable: true,
-      render: (payment) => getTypeBadge(payment.type),
     },
     {
       key: "amount",
       label: "Amount",
       sortable: true,
-      render: (payment) => (
-        <div>
-          <span className="font-semibold">{payment.amount} Kip</span>
-          {payment.fee > 0 && (
-            <p className="text-xs text-white">
-              Fee: {payment.fee} Kip
-            </p>
-          )}
-        </div>
+      render: (req) => (
+        <span className="font-semibold">{req.amount.toLocaleString()} Kip</span>
       ),
     },
     {
-      key: "method",
-      label: "Method",
-      render: (payment) => (
-        <div className="flex items-center gap-2 text-white">
-          {getMethodIcon(payment.method)}
-          <span className="capitalize">{payment.method}</span>
-        </div>
+      key: "slipUrl",
+      label: "Slip",
+      render: (req) => (
+        <button
+          onClick={(e) => { e.stopPropagation(); setSlipPreview(req.slipUrl) }}
+          className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+          View
+        </button>
       ),
     },
     {
       key: "status",
       label: "Status",
       sortable: true,
-      render: (payment) => getStatusBadge(payment.status),
+      render: (req) => getStatusBadge(req.status),
+    },
+    {
+      key: "createdAt",
+      label: "Date",
+      sortable: true,
+      render: (req) => <span className="text-sm text-white">{req.createdAt}</span>,
     },
   ]
 
-  const renderMobileCard = (payment: Payment) => (
-    <Card key={payment.id} className="overflow-hidden">
+  const renderMobileCard = (req: TopUpItem) => (
+    <Card key={req.id} className="overflow-hidden">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div>
-            <p className="font-mono text-sm font-medium">{payment.transactionId}</p>
-            <p className="text-xs text-white">{payment.createdAt}</p>
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                {req.userName.split(" ").map((n) => n[0]).join("")}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{req.userName}</p>
+              <p className="text-xs text-white">{req.userEmail}</p>
+            </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSelectedPayment(payment)}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
+              <DropdownMenuItem onClick={() => setSelectedRequest(req)}>
+                <Eye className="mr-2 h-4 w-4" />View Details
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Download className="mr-2 h-4 w-4" />
-                Download Receipt
+              <DropdownMenuItem onClick={() => setSlipPreview(req.slipUrl)}>
+                <ImageIcon className="mr-2 h-4 w-4" />View Slip
               </DropdownMenuItem>
-              {payment.status === "pending" && (
+              {req.status === "PENDING" && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Retry Payment
+                  <DropdownMenuItem onClick={() => handleApprove(req.id)}>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSelectedRequest(req); setShowRejectDialog(true) }}>
+                    <XCircle className="mr-2 h-4 w-4" />Reject
                   </DropdownMenuItem>
                 </>
               )}
@@ -387,36 +352,22 @@ export default function AdminPaymentsPage() {
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <div className="flex gap-2">
-            {getTypeBadge(payment.type)}
-            {getStatusBadge(payment.status)}
-          </div>
-          <span className="text-xl font-bold">{payment.amount} Kip</span>
+          {getStatusBadge(req.status)}
+          <span className="text-xl font-bold">{req.amount.toLocaleString()} Kip</span>
         </div>
 
-        <div className="mt-4 space-y-2 rounded-lg bg-muted/50 p-3 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-white">From:</span>
-            <span className="font-medium">{payment.payer}</span>
+        <p className="mt-2 text-xs text-white">{req.createdAt}</p>
+
+        {req.status === "PENDING" && (
+          <div className="mt-4 flex gap-2">
+            <Button size="sm" variant="outline" className="flex-1" onClick={() => { setSelectedRequest(req); setShowRejectDialog(true) }}>
+              Reject
+            </Button>
+            <Button size="sm" className="flex-1" onClick={() => handleApprove(req.id)}>
+              Approve
+            </Button>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white">To:</span>
-            <span className="font-medium">{payment.recipient}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-white">Method:</span>
-            <div className="flex items-center gap-1">
-              {getMethodIcon(payment.method)}
-              <span className="capitalize">{payment.method}</span>
-            </div>
-          </div>
-          {payment.fee > 0 && (
-            <div className="flex items-center justify-between border-t border-border pt-2">
-              <span className="text-white">Platform Fee:</span>
-              <span className="text-destructive">-{payment.fee} Kip</span>
-            </div>
-          )}
-        </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -425,67 +376,93 @@ export default function AdminPaymentsPage() {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-        <p className="text-white">Monitor all transactions and payouts</p>
+        <p className="text-white">Review and manage top-up requests</p>
       </div>
 
       {/* Stats Grid */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-white" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="flex items-center gap-1 text-xs">
-                {stat.trend === "up" ? (
-                  <ArrowUpRight className="h-3 w-3 text-emerald-500" />
-                ) : (
-                  <ArrowDownRight className="h-3 w-3 text-destructive" />
-                )}
-                <span className={stat.trend === "up" ? "text-emerald-500" : "text-destructive"}>
-                  {stat.change}
-                </span>
-                <span className="text-white">from last month</span>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/10">
+                <Clock className="h-5 w-5 text-yellow-500" />
               </div>
-            </CardContent>
-          </Card>
-        ))}
+              <div>
+                <p className="text-sm text-white">Pending</p>
+                <p className="text-2xl font-bold">{stats.pendingCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-sm text-white">Approved</p>
+                <p className="text-2xl font-bold">{stats.approvedCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
+                <XCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <p className="text-sm text-white">Rejected</p>
+                <p className="text-2xl font-bold">{stats.rejectedCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-white">Total Approved</p>
+                <p className="text-2xl font-bold">{stats.totalApproved.toLocaleString()} <span className="text-sm font-normal text-white">Kip</span></p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <DataTable
-        data={localPayments}
+        data={items}
         columns={columns}
-        searchKey="transactionId"
-        searchPlaceholder="Search by transaction ID..."
+        searchKey="userName"
+        searchPlaceholder="Search by user name..."
         filters={filters}
-        pageSize={10}
+        pageSize={50}
         renderMobileCard={renderMobileCard}
-        actions={(payment) => (
+        actions={(req) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSelectedPayment(payment)}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
+              <DropdownMenuItem onClick={() => setSelectedRequest(req)}>
+                <Eye className="mr-2 h-4 w-4" />View Details
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Download className="mr-2 h-4 w-4" />
-                Download Receipt
+              <DropdownMenuItem onClick={() => setSlipPreview(req.slipUrl)}>
+                <ImageIcon className="mr-2 h-4 w-4" />View Slip
               </DropdownMenuItem>
-              {payment.status === "pending" && (
+              {req.status === "PENDING" && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Retry Payment
+                  <DropdownMenuItem onClick={() => handleApprove(req.id)}>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSelectedRequest(req); setShowRejectDialog(true) }}>
+                    <XCircle className="mr-2 h-4 w-4" />Reject
                   </DropdownMenuItem>
                 </>
               )}
@@ -494,74 +471,134 @@ export default function AdminPaymentsPage() {
         )}
       />
 
-      {/* Payment Detail Dialog */}
-      <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedRequest && !showRejectDialog} onOpenChange={() => setSelectedRequest(null)}>
         <DialogContent className="max-w-lg">
-          {selectedPayment && (
+          {selectedRequest && (
             <>
               <DialogHeader>
-                <DialogTitle>Payment Details</DialogTitle>
-                <DialogDescription>
-                  Transaction {selectedPayment.transactionId}
-                </DialogDescription>
+                <DialogTitle>Top-up Request Details</DialogTitle>
+                <DialogDescription>Review the payment slip and approve or reject</DialogDescription>
               </DialogHeader>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    {getTypeBadge(selectedPayment.type)}
-                    {getStatusBadge(selectedPayment.status)}
+
+              <div className="space-y-4">
+                {/* User Info */}
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {selectedRequest.userName.split(" ").map((n) => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold">{selectedRequest.userName}</p>
+                    <p className="text-sm text-white">{selectedRequest.userEmail}</p>
                   </div>
-                  <span className="text-2xl font-bold">{selectedPayment.amount} Kip</span>
+                  {getStatusBadge(selectedRequest.status)}
                 </div>
 
-                <p className="text-white">{selectedPayment.description}</p>
-
-                <div className="grid gap-4">
-                  <div className="rounded-lg border p-4">
-                    <p className="text-sm text-white">From</p>
-                    <p className="font-medium">{selectedPayment.payer}</p>
-                    <p className="text-sm text-white">{selectedPayment.payerEmail}</p>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-sm text-white">To</p>
-                    <p className="font-medium">{selectedPayment.recipient}</p>
-                    <p className="text-sm text-white">{selectedPayment.recipientEmail}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 rounded-lg bg-muted/50 p-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white">Amount</span>
-                    <span>{selectedPayment.amount} Kip</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white">Platform Fee (10%)</span>
-                    <span className="text-destructive">-{selectedPayment.fee} Kip</span>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-border pt-2 font-medium">
-                    <span>Net Amount</span>
-                    <span className="text-primary">{selectedPayment.netAmount} Kip</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
+                {/* Amount */}
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border">
                   <div className="flex items-center gap-2 text-white">
-                    {getMethodIcon(selectedPayment.method)}
-                    <span className="capitalize">{selectedPayment.method}</span>
+                    <Wallet className="h-5 w-5" />
+                    <span>Top-up Amount</span>
                   </div>
-                  <span className="text-white">{selectedPayment.createdAt}</span>
+                  <span className="text-2xl font-bold text-primary">{selectedRequest.amount.toLocaleString()} Kip</span>
                 </div>
+
+                {/* Payment Slip */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Payment Slip</p>
+                  <button
+                    onClick={() => setSlipPreview(selectedRequest.slipUrl)}
+                    className="group relative w-full overflow-hidden rounded-lg border border-border"
+                  >
+                    <img
+                      src={selectedRequest.slipUrl}
+                      alt="Payment slip"
+                      className="w-full max-h-64 object-contain bg-black/50 transition-opacity group-hover:opacity-80"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                      <span className="text-sm text-white font-medium">Click to view full size</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Date */}
+                <p className="text-sm text-white">Submitted: {selectedRequest.createdAt}</p>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelectedPayment(null)}>
-                  Close
-                </Button>
-                <Button>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Receipt
-                </Button>
-              </DialogFooter>
+
+              {selectedRequest.status === "PENDING" && (
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => { setShowRejectDialog(true) }}
+                    disabled={isProcessing}
+                  >
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Reject
+                  </Button>
+                  <Button
+                    onClick={() => handleApprove(selectedRequest.id)}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <><Loader className="mr-2 h-4 w-4 animate-spin" />Processing...</>
+                    ) : (
+                      <><CheckCircle2 className="mr-2 h-4 w-4" />Approve</>
+                    )}
+                  </Button>
+                </DialogFooter>
+              )}
+
+              {selectedRequest.status !== "PENDING" && (
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setSelectedRequest(null)}>Close</Button>
+                </DialogFooter>
+              )}
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Top-up Request</DialogTitle>
+            <DialogDescription>
+              Provide a reason for rejecting this top-up request. The user will be notified by email.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Enter rejection reason..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowRejectDialog(false); setRejectReason("") }} disabled={isProcessing}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleReject} disabled={isProcessing}>
+              {isProcessing ? (
+                <><Loader className="mr-2 h-4 w-4 animate-spin" />Rejecting...</>
+              ) : (
+                "Reject Request"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Full-screen Slip Preview */}
+      <Dialog open={!!slipPreview} onOpenChange={() => setSlipPreview(null)}>
+        <DialogContent className="max-w-2xl p-2">
+          {slipPreview && (
+            <img
+              src={slipPreview}
+              alt="Payment slip"
+              className="w-full rounded-lg object-contain"
+            />
           )}
         </DialogContent>
       </Dialog>

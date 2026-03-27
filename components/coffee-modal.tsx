@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,6 +40,10 @@ interface CoffeeModalProps {
   }
   coffeePrice?: number
   walletBalance?: number
+  userRole?: "USER" | "DEVELOPER" | "ADMIN"
+  onPayment?: (data: { amount: number; writerId: string; message: string }) => void
+  isPaymentProcessing?: boolean
+  paymentSuccess?: boolean
 }
 
 function formatNumber(value: string): string {
@@ -52,14 +56,13 @@ function parseFormattedNumber(value: string): number {
   return parseInt(value.replace(/[^0-9]/g, "")) || 0
 }
 
-export function CoffeeModal({ children, writer, coffeePrice = 20000, walletBalance = 0 }: CoffeeModalProps) {
+export function CoffeeModal({ children, writer, coffeePrice = 20000, walletBalance = 0, userRole = "USER", onPayment, isPaymentProcessing = false, paymentSuccess = false }: CoffeeModalProps) {
   const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<"amount" | "confirm" | "success">("amount")
   const [displayAmount, setDisplayAmount] = useState("")
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [message, setMessage] = useState("")
-  const [isProcessing, setIsProcessing] = useState(false)
 
   const writerInitials = writer.name
     .split(" ")
@@ -80,16 +83,22 @@ export function CoffeeModal({ children, writer, coffeePrice = 20000, walletBalan
     }
   }
 
-  const handlePayment = async () => {
+  // Move to success step when payment completes
+  useEffect(() => {
+    if (paymentSuccess && step === "confirm") {
+      setStep("success")
+    }
+  }, [paymentSuccess, step])
+
+  const handlePayment = () => {
     if (!hasEnoughBalance) {
       setIsOpen(false)
-      navigate("/user/profile")
+      navigate(userRole === "DEVELOPER" || userRole === "ADMIN" ? "/developer/profile?tab=wallet" : "/user/profile?tab=wallet")
       return
     }
-    setIsProcessing(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsProcessing(false)
-    setStep("success")
+    if (onPayment) {
+      onPayment({ amount: totalAmount, writerId: writer.id, message })
+    }
   }
 
   const handleClose = () => {
@@ -322,10 +331,10 @@ export function CoffeeModal({ children, writer, coffeePrice = 20000, walletBalan
               {hasEnoughBalance ? (
                 <Button
                   onClick={handlePayment}
-                  disabled={isProcessing}
+                  disabled={isPaymentProcessing}
                   className="flex-1 gap-2 bg-amber-500 hover:bg-amber-600 text-white"
                 >
-                  {isProcessing ? (
+                  {isPaymentProcessing ? (
                     <>Processing...</>
                   ) : (
                     <>

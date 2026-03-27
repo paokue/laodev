@@ -32,6 +32,27 @@ export async function sendOtpEmail(to: string, otp: string, name: string) {
   });
 }
 
+export async function sendTopUpStatusEmail(to: string, name: string, amount: number, status: "APPROVED" | "REJECTED", reason?: string) {
+  const isApproved = status === "APPROVED"
+  await transporter.sendMail({
+    from: `"LaoDev" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `LaoDev - Top-up ${isApproved ? "Approved" : "Rejected"}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; border-radius: 12px; border: 1px solid #1a1a1a;">
+        <h2 style="color: #22c55e; margin: 0 0 8px;">LaoDev</h2>
+        <p style="color: #e5e5e5; margin: 0 0 24px;">Hello ${name},</p>
+        <p style="color: #a3a3a3; margin: 0 0 16px;">Your top-up request of <strong style="color: #e5e5e5;">${amount.toLocaleString()} Kip</strong> has been <strong style="color: ${isApproved ? "#22c55e" : "#ef4444"};">${isApproved ? "approved" : "rejected"}</strong>.</p>
+        ${isApproved
+          ? '<p style="color: #a3a3a3; margin: 0 0 16px;">The amount has been added to your wallet balance. You can now use it to book developers or buy coffees.</p>'
+          : `<p style="color: #a3a3a3; margin: 0 0 8px;">Reason:</p><div style="background: #111; border: 1px solid #ef444433; border-radius: 8px; padding: 16px; margin: 0 0 16px;"><p style="color: #fca5a5; margin: 0;">${reason || "No reason provided"}</p></div>`
+        }
+        <p style="color: #666; font-size: 12px; margin: 24px 0 0;">This is an automated notification from LaoDev.</p>
+      </div>
+    `,
+  });
+}
+
 export async function sendResetPasswordEmail(to: string, resetToken: string, name: string) {
   const resetUrl = `${process.env.APP_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
 

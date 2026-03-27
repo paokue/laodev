@@ -192,6 +192,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     authorArticleCount,
     currentUserId: session?.userId || null,
     currentUserName: session?.name || null,
+    userRole: (session?.role || "USER") as "USER" | "DEVELOPER" | "ADMIN",
     walletBalance: currentUserWallet?.balance || 0,
     isLiked: !!userLike,
     likeCount: articleLikeCount,
@@ -206,6 +207,71 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const formData = await request.formData()
   const intent = String(formData.get("intent"))
+
+  if (intent === "buy-coffee") {
+    const amount = parseFloat(String(formData.get("amount")))
+    const writerId = String(formData.get("writerId"))
+    const coffeeMessage = String(formData.get("message") || "")
+
+    if (!amount || amount <= 0) return { error: "Invalid amount", intent: "buy-coffee" }
+
+    // Get buyer's wallet
+    const buyerWallet = await prisma.wallet.findUnique({
+      where: { userId: session.userId },
+    })
+
+    if (!buyerWallet || buyerWallet.balance < amount) {
+      return { error: "Insufficient balance", intent: "buy-coffee" }
+    }
+
+    // Get writer's user ID from the article author
+    const writerUser = await prisma.user.findUnique({
+      where: { id: writerId },
+      select: { id: true },
+    })
+    if (!writerUser) return { error: "Writer not found", intent: "buy-coffee" }
+
+    // Deduct from buyer's wallet
+    await prisma.wallet.update({
+      where: { id: buyerWallet.id },
+      data: { balance: { decrement: amount } },
+    })
+
+    // Create buyer transaction
+    await prisma.walletTransaction.create({
+      data: {
+        walletId: buyerWallet.id,
+        type: "COFFEE_TIP",
+        amount,
+        description: coffeeMessage ? `Coffee tip: "${coffeeMessage}"` : "Coffee tip sent",
+      },
+    })
+
+    // Upsert writer's wallet and add balance
+    const writerWallet = await prisma.wallet.upsert({
+      where: { userId: writerId },
+      create: { userId: writerId, balance: amount },
+      update: { balance: { increment: amount } },
+    })
+
+    // Create writer transaction
+    await prisma.walletTransaction.create({
+      data: {
+        walletId: writerWallet.id,
+        type: "COFFEE_TIP",
+        amount,
+        description: coffeeMessage ? `Coffee received: "${coffeeMessage}"` : "Coffee tip received",
+      },
+    })
+
+    // Increment article coffee count
+    await prisma.article.update({
+      where: { id: params.id },
+      data: { coffeeCount: { increment: 1 } },
+    })
+
+    return { success: "Coffee sent!", intent: "buy-coffee" }
+  }
 
   if (intent === "like-article") {
     const existing = await prisma.articleLike.findUnique({
@@ -273,9 +339,10 @@ function LikeButton({ commentId, likes }: { commentId: string; likes: number }) 
 }
 
 export default function KnowledgeDetailPage({ loaderData, actionData }: Route.ComponentProps) {
-  const { article, comments, relatedArticles, authorArticleCount, currentUserId, walletBalance, isLiked: initialIsLiked, likeCount: initialLikeCount } = loaderData
+  const { article, comments, relatedArticles, authorArticleCount, currentUserId, walletBalance, userRole, isLiked: initialIsLiked, likeCount: initialLikeCount } = loaderData
   const [isBookmarked, setIsBookmarked] = useState(false)
   const likeFetcher = useFetcher()
+  const coffeeFetcher = useFetcher<typeof action>()
   const isLikeSubmitting = likeFetcher.state !== "idle"
   const optimisticIsLiked = isLikeSubmitting ? !initialIsLiked : initialIsLiked
   const optimisticLikeCount = isLikeSubmitting
@@ -293,6 +360,24 @@ export default function KnowledgeDetailPage({ loaderData, actionData }: Route.Co
       toast.error(actionData.error)
     }
   }, [actionData])
+
+  const coffeeSuccess = coffeeFetcher.data && "intent" in coffeeFetcher.data && coffeeFetcher.data.intent === "buy-coffee" && "success" in coffeeFetcher.data
+
+  useEffect(() => {
+    if (coffeeSuccess) {
+      toast.success("Coffee sent successfully!")
+    }
+    if (coffeeFetcher.data && "intent" in coffeeFetcher.data && coffeeFetcher.data.intent === "buy-coffee" && "error" in coffeeFetcher.data) {
+      toast.error(coffeeFetcher.data.error as string)
+    }
+  }, [coffeeFetcher.data])
+
+  const handleCoffeePayment = (data: { amount: number; writerId: string; message: string }) => {
+    coffeeFetcher.submit(
+      { intent: "buy-coffee", amount: String(data.amount), writerId: data.writerId, message: data.message },
+      { method: "post" }
+    )
+  }
 
   const authorInitials = article.author.name
     .split(" ")
@@ -420,6 +505,10 @@ export default function KnowledgeDetailPage({ loaderData, actionData }: Route.Co
                       bio: article.author.bio,
                     }}
                     walletBalance={walletBalance}
+                    userRole={userRole}
+                    onPayment={handleCoffeePayment}
+                    isPaymentProcessing={coffeeFetcher.state !== "idle"}
+                    paymentSuccess={!!coffeeSuccess}
                   >
                     <Button variant="ghost" size="sm" className="gap-1 text-amber-500 hover:text-amber-500">
                       <Coffee className="h-4 w-4" />
