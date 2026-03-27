@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -20,12 +21,8 @@ import {
   CheckCircle2,
   MapPin,
   Heart,
-  QrCode,
   Wallet,
-  CreditCard,
-  Smartphone,
-  Copy,
-  ExternalLink,
+  AlertCircle,
   Sparkles,
 } from "lucide-react"
 
@@ -40,26 +37,29 @@ interface CoffeeModalProps {
     isVerified?: boolean
     totalCoffees?: number
     bio?: string
-    qrCodeUrl?: string
-    walletAddress?: string
-    bankInfo?: {
-      bankName: string
-      accountNumber: string
-      accountName: string
-    }
   }
   coffeePrice?: number
+  walletBalance?: number
 }
 
-export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalProps) {
+function formatNumber(value: string): string {
+  const num = value.replace(/[^0-9]/g, "")
+  if (!num) return ""
+  return parseInt(num).toLocaleString()
+}
+
+function parseFormattedNumber(value: string): number {
+  return parseInt(value.replace(/[^0-9]/g, "")) || 0
+}
+
+export function CoffeeModal({ children, writer, coffeePrice = 20000, walletBalance = 0 }: CoffeeModalProps) {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
-  const [step, setStep] = useState<"amount" | "payment" | "success">("amount")
-  const [customAmount, setCustomAmount] = useState("")
+  const [step, setStep] = useState<"amount" | "confirm" | "success">("amount")
+  const [displayAmount, setDisplayAmount] = useState("")
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [message, setMessage] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState<"qr" | "wallet" | "card">("qr")
   const [isProcessing, setIsProcessing] = useState(false)
-  const [copied, setCopied] = useState(false)
 
   const writerInitials = writer.name
     .split(" ")
@@ -69,29 +69,27 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
 
   const totalAmount = selectedAmount
     ? selectedAmount * coffeePrice
-    : customAmount
-      ? parseFloat(customAmount)
-      : 0
+    : parseFormattedNumber(displayAmount)
 
-  const coffeeCount = selectedAmount || (customAmount ? Math.floor(parseFloat(customAmount) / coffeePrice) : 0)
+  const coffeeCount = selectedAmount || (totalAmount > 0 ? Math.floor(totalAmount / coffeePrice) : 0)
+  const hasEnoughBalance = walletBalance >= totalAmount
 
   const handleContinue = () => {
     if (totalAmount > 0) {
-      setStep("payment")
+      setStep("confirm")
     }
   }
 
   const handlePayment = async () => {
+    if (!hasEnoughBalance) {
+      setIsOpen(false)
+      navigate("/user/profile")
+      return
+    }
     setIsProcessing(true)
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsProcessing(false)
     setStep("success")
-  }
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   const handleClose = () => {
@@ -99,80 +97,9 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
     setTimeout(() => {
       setStep("amount")
       setSelectedAmount(null)
-      setCustomAmount("")
+      setDisplayAmount("")
       setMessage("")
     }, 300)
-  }
-
-  // Generate QR Code SVG (placeholder - in production use actual QR library)
-  const generateQRCode = () => {
-    const data = `laodev://coffee/${writer.id}?amount=${totalAmount}`
-    return (
-      <div className="relative">
-        <div className="w-48 h-48 mx-auto bg-white rounded-xl p-3 relative overflow-hidden">
-          {/* Simplified QR pattern */}
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {/* QR Code pattern simulation */}
-            <rect fill="#000" width="100" height="100" />
-            <rect fill="#fff" x="5" y="5" width="90" height="90" />
-
-            {/* Corner squares */}
-            <rect fill="#000" x="10" y="10" width="25" height="25" />
-            <rect fill="#fff" x="13" y="13" width="19" height="19" />
-            <rect fill="#000" x="16" y="16" width="13" height="13" />
-
-            <rect fill="#000" x="65" y="10" width="25" height="25" />
-            <rect fill="#fff" x="68" y="13" width="19" height="19" />
-            <rect fill="#000" x="71" y="16" width="13" height="13" />
-
-            <rect fill="#000" x="10" y="65" width="25" height="25" />
-            <rect fill="#fff" x="13" y="68" width="19" height="19" />
-            <rect fill="#000" x="16" y="71" width="13" height="13" />
-
-            {/* Random pattern */}
-            <rect fill="#000" x="40" y="10" width="5" height="5" />
-            <rect fill="#000" x="50" y="15" width="5" height="5" />
-            <rect fill="#000" x="45" y="20" width="5" height="5" />
-            <rect fill="#000" x="40" y="25" width="5" height="5" />
-            <rect fill="#000" x="50" y="30" width="5" height="5" />
-
-            <rect fill="#000" x="10" y="40" width="5" height="5" />
-            <rect fill="#000" x="20" y="45" width="5" height="5" />
-            <rect fill="#000" x="15" y="50" width="5" height="5" />
-            <rect fill="#000" x="25" y="55" width="5" height="5" />
-
-            <rect fill="#000" x="40" y="40" width="20" height="20" />
-            <rect fill="#fff" x="43" y="43" width="14" height="14" />
-            <rect fill="#000" x="46" y="46" width="8" height="8" />
-
-            <rect fill="#000" x="65" y="45" width="5" height="5" />
-            <rect fill="#000" x="75" y="40" width="5" height="5" />
-            <rect fill="#000" x="70" y="55" width="5" height="5" />
-            <rect fill="#000" x="80" y="50" width="5" height="5" />
-
-            <rect fill="#000" x="40" y="70" width="5" height="5" />
-            <rect fill="#000" x="50" y="75" width="5" height="5" />
-            <rect fill="#000" x="45" y="80" width="5" height="5" />
-            <rect fill="#000" x="55" y="85" width="5" height="5" />
-
-            <rect fill="#000" x="65" y="70" width="5" height="5" />
-            <rect fill="#000" x="75" y="75" width="5" height="5" />
-            <rect fill="#000" x="70" y="80" width="5" height="5" />
-            <rect fill="#000" x="80" y="85" width="5" height="5" />
-          </svg>
-
-          {/* Coffee icon overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-amber-500 rounded-lg p-2">
-              <Coffee className="h-6 w-6 text-white" />
-            </div>
-          </div>
-        </div>
-        <p className="text-center text-sm text-white mt-3">
-          Scan with your banking app to pay
-        </p>
-      </div>
-    )
   }
 
   return (
@@ -213,7 +140,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                     {writer.location}
                   </div>
                 )}
-                {writer.totalCoffees && (
+                {writer.totalCoffees !== undefined && writer.totalCoffees > 0 && (
                   <Badge variant="secondary" className="mt-2 gap-1 bg-amber-500/10 text-amber-500">
                     <Coffee className="h-3 w-3" />
                     {writer.totalCoffees} coffees received
@@ -236,11 +163,11 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                     key={amount}
                     onClick={() => {
                       setSelectedAmount(amount)
-                      setCustomAmount("")
+                      setDisplayAmount(formatNumber(String(amount * coffeePrice)))
                     }}
                     className={`flex flex-col items-center p-3 rounded-xl border transition-all ${selectedAmount === amount
-                        ? "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500"
-                        : "border-border hover:border-amber-500/50 hover:bg-card"
+                      ? "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500"
+                      : "border-border hover:border-amber-500/50 hover:bg-card"
                       }`}
                   >
                     <div className="flex items-center gap-0.5 mb-1">
@@ -257,7 +184,7 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                         <span className="text-xs text-amber-500 ml-0.5">x{amount}</span>
                       )}
                     </div>
-                    <span className="text-sm font-medium">${amount * coffeePrice}</span>
+                    <span className="text-sm font-medium">{(amount * coffeePrice).toLocaleString()} Kip</span>
                   </button>
                 ))}
               </div>
@@ -266,19 +193,20 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               <div className="space-y-2">
                 <Label className="text-sm text-white">Or enter custom amount</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white">
-                    $
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-xs">
+                    Kip
                   </span>
                   <Input
-                    type="number"
-                    min="1"
-                    placeholder="0.00"
-                    value={customAmount}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={displayAmount}
                     onChange={(e) => {
-                      setCustomAmount(e.target.value)
+                      const formatted = formatNumber(e.target.value)
+                      setDisplayAmount(formatted)
                       setSelectedAmount(null)
                     }}
-                    className="pl-7 border-border bg-card"
+                    className="pl-10 border-border bg-card"
                   />
                 </div>
               </div>
@@ -303,20 +231,20 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white"
             >
               <Coffee className="h-4 w-4" />
-              Continue with ${totalAmount.toFixed(2)}
+              Continue with {totalAmount.toLocaleString()} Kip
             </Button>
           </>
         )}
 
-        {step === "payment" && (
+        {step === "confirm" && (
           <>
             <DialogHeader className="text-center pb-2">
               <DialogTitle className="flex items-center justify-center gap-2 text-xl">
                 <Wallet className="h-6 w-6 text-primary" />
-                Payment
+                Confirm Payment
               </DialogTitle>
               <DialogDescription className="text-center">
-                Choose your payment method
+                Pay from your wallet balance
               </DialogDescription>
             </DialogHeader>
 
@@ -335,135 +263,50 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-bold text-lg text-amber-500">${totalAmount.toFixed(2)}</p>
+                <p className="font-bold text-lg text-amber-500">{totalAmount.toLocaleString()} Kip</p>
               </div>
             </div>
 
-            {/* Payment Methods */}
+            {/* Wallet Balance */}
             <div className="space-y-3 py-4">
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => setPaymentMethod("qr")}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${paymentMethod === "qr"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                    }`}
-                >
-                  <QrCode className={`h-5 w-5 ${paymentMethod === "qr" ? "text-primary" : "text-white"}`} />
-                  <span className="text-xs font-medium">QR Code</span>
-                </button>
-                <button
-                  onClick={() => setPaymentMethod("wallet")}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${paymentMethod === "wallet"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                    }`}
-                >
-                  <Smartphone className={`h-5 w-5 ${paymentMethod === "wallet" ? "text-primary" : "text-white"}`} />
-                  <span className="text-xs font-medium">E-Wallet</span>
-                </button>
-                <button
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${paymentMethod === "card"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                    }`}
-                >
-                  <CreditCard className={`h-5 w-5 ${paymentMethod === "card" ? "text-primary" : "text-white"}`} />
-                  <span className="text-xs font-medium">Card</span>
-                </button>
+              <div className={`p-4 rounded-xl border ${hasEnoughBalance ? "border-emerald-500/30 bg-emerald-500/5" : "border-red-500/30 bg-red-500/5"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-white flex items-center gap-2">
+                    <Wallet className="h-4 w-4" />
+                    Your Wallet Balance
+                  </span>
+                  <span className={`font-bold ${hasEnoughBalance ? "text-emerald-400" : "text-red-400"}`}>
+                    {walletBalance.toLocaleString()} Kip
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white">Amount to pay</span>
+                  <span className="font-medium text-amber-500">-{totalAmount.toLocaleString()} Kip</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-border flex items-center justify-between text-sm">
+                  <span className="text-white">Remaining after payment</span>
+                  <span className={`font-bold ${hasEnoughBalance ? "text-emerald-400" : "text-red-400"}`}>
+                    {(walletBalance - totalAmount).toLocaleString()} Kip
+                  </span>
+                </div>
               </div>
 
-              {/* QR Code Payment */}
-              {paymentMethod === "qr" && (
-                <div className="p-4 rounded-xl border border-border bg-card/50 space-y-4">
-                  {generateQRCode()}
-
-                  {writer.bankInfo && (
-                    <div className="space-y-2 pt-4 border-t border-border">
-                      <p className="text-sm font-medium text-center">Bank Transfer Details</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between p-2 rounded-lg bg-background">
-                          <span className="text-white">Bank</span>
-                          <span className="font-medium">{writer.bankInfo.bankName}</span>
-                        </div>
-                        <div className="flex justify-between items-center p-2 rounded-lg bg-background">
-                          <span className="text-white">Account No.</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-medium">{writer.bankInfo.accountNumber}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => handleCopy(writer.bankInfo!.accountNumber)}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="flex justify-between p-2 rounded-lg bg-background">
-                          <span className="text-white">Name</span>
-                          <span className="font-medium">{writer.bankInfo.accountName}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* E-Wallet */}
-              {paymentMethod === "wallet" && (
-                <div className="p-4 rounded-xl border border-border bg-card/50 space-y-3">
-                  <p className="text-sm text-center text-white">
-                    Send to wallet address:
-                  </p>
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-background">
-                    <span className="text-sm font-mono truncate flex-1">
-                      {writer.walletAddress || "0xLaoDev...abc123"}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0"
-                      onClick={() => handleCopy(writer.walletAddress || "0xLaoDev...abc123")}
-                    >
-                      {copied ? (
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1 gap-2 border-border">
-                      <ExternalLink className="h-4 w-4" />
-                      BCEL One
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 gap-2 border-border">
-                      <ExternalLink className="h-4 w-4" />
-                      U-Money
-                    </Button>
+              {!hasEnoughBalance && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-400">Insufficient balance</p>
+                    <p className="text-xs text-white mt-1">
+                      You need {(totalAmount - walletBalance).toLocaleString()} Kip more. Please top up your wallet first.
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Card Payment */}
-              {paymentMethod === "card" && (
-                <div className="p-4 rounded-xl border border-border bg-card/50 space-y-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Card Number</Label>
-                    <Input placeholder="4242 4242 4242 4242" className="border-border bg-card font-mono" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className="text-xs">Expiry</Label>
-                      <Input placeholder="MM/YY" className="border-border bg-card" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs">CVC</Label>
-                      <Input placeholder="123" className="border-border bg-card" />
-                    </div>
-                  </div>
+              {message && (
+                <div className="p-3 rounded-xl bg-card/50 border border-border">
+                  <p className="text-xs text-white mb-1">Your message:</p>
+                  <p className="text-sm italic">"{message}"</p>
                 </div>
               )}
             </div>
@@ -476,20 +319,30 @@ export function CoffeeModal({ children, writer, coffeePrice = 5 }: CoffeeModalPr
               >
                 Back
               </Button>
-              <Button
-                onClick={handlePayment}
-                disabled={isProcessing}
-                className="flex-1 gap-2 bg-amber-500 hover:bg-amber-600 text-white"
-              >
-                {isProcessing ? (
-                  <>Processing...</>
-                ) : (
-                  <>
-                    <Coffee className="h-4 w-4" />
-                    Confirm Payment
-                  </>
-                )}
-              </Button>
+              {hasEnoughBalance ? (
+                <Button
+                  onClick={handlePayment}
+                  disabled={isProcessing}
+                  className="flex-1 gap-2 bg-amber-500 hover:bg-amber-600 text-white"
+                >
+                  {isProcessing ? (
+                    <>Processing...</>
+                  ) : (
+                    <>
+                      <Coffee className="h-4 w-4" />
+                      Pay {totalAmount.toLocaleString()} Kip
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handlePayment}
+                  className="flex-1 gap-2"
+                >
+                  <Wallet className="h-4 w-4" />
+                  Top Up Wallet
+                </Button>
+              )}
             </div>
           </>
         )}

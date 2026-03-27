@@ -44,6 +44,9 @@ export async function action({ request }: Route.ActionArgs) {
     if (existingUser && existingUser.emailVerified) {
       return { error: "An account with this email already exists", step: "form" as const }
     }
+    if (existingUser && !existingUser.emailVerified && existingUser.role !== "USER") {
+      return { error: "This email is already registered as a developer. Please log in instead.", step: "form" as const }
+    }
 
     const hashedPassword = await hashPassword(password)
     const otp = generateOtp()

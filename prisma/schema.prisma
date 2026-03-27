@@ -24,6 +24,7 @@ enum DeveloperStatus {
   PENDING
   APPROVED
   REJECTED
+  ACTIVE
 }
 
 model User {
@@ -64,36 +65,38 @@ model User {
 }
 
 model Developer {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String          @unique @db.ObjectId
-  user           User            @relation(fields: [userId], references: [id])
-  title          String
-  specialties    String[]
-  skills         String[]
-  hourlyRate     Float
-  experience     Int
-  location       String?
-  languages      String[]
-  availability   String?
-  gender         String
-  career         String
-  dob            DateTime
-  phone          String
-  profile        String?
-  website        String?
-  github         String?
-  status         DeveloperStatus @default(PENDING)
-  rating         Float           @default(0)
-  reviewCount    Int             @default(0)
-  totalEarnings  Float           @default(0)
-  completedJobs  Int             @default(0)
-  education      Education[]
-  certifications String[]
-  portfolio      String[]
-  bookings       Booking[]       @relation("DeveloperBookings")
-  reviews        Review[]        @relation("DeveloperReviews")
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String           @unique @db.ObjectId
+  user            User             @relation(fields: [userId], references: [id])
+  title           String
+  specialties     String[]
+  skills          String[]
+  hourlyRate      Float
+  experience      Int
+  location        String?
+  languages       String[]
+  availability    String?
+  gender          String
+  career          String
+  dob             DateTime
+  phone           String
+  profile         String?
+  website         String?
+  github          String?
+  status          DeveloperStatus  @default(PENDING)
+  rating          Float            @default(0)
+  reviewCount     Int              @default(0)
+  totalEarnings   Float            @default(0)
+  completedJobs   Int              @default(0)
+  education       Education[]
+  certifications  String[]
+  portfolio       String[]
+  bookings        Booking[]        @relation("DeveloperBookings")
+  reviews         Review[]         @relation("DeveloperReviews")
+  paymentMethods  PaymentMethod[]
+  withdrawals     Withdrawal[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@map("developers")
 }
@@ -167,22 +170,53 @@ model SavedPost {
 }
 
 model Article {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  authorId   String   @db.ObjectId
-  author     User     @relation(fields: [authorId], references: [id])
-  title      String
-  excerpt    String?
-  content    String
-  category   String
-  tags       String[]
-  coverImage String?
-  status     String   @default("published")
-  readTime   Int      @default(5)
-  views      Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  authorId    String           @db.ObjectId
+  author      User             @relation(fields: [authorId], references: [id])
+  title       String
+  excerpt     String?
+  content     String
+  category    String
+  tags        String[]
+  coverImage  String?
+  status      String           @default("published")
+  readTime    Int              @default(5)
+  views       Int              @default(0)
+  coffeeCount  Int              @default(0)
+  likes        Int              @default(0)
+  comments     ArticleComment[]
+  articleLikes ArticleLike[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@map("articles")
+}
+
+model ArticleLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String   @db.ObjectId
+  article   Article  @relation(fields: [articleId], references: [id])
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, userId])
+  @@map("article_likes")
+}
+
+model ArticleComment {
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  articleId  String           @db.ObjectId
+  article    Article          @relation(fields: [articleId], references: [id])
+  authorId   String           @db.ObjectId
+  authorName String
+  content    String
+  likes      Int              @default(0)
+  parentId   String?          @db.ObjectId
+  parent     ArticleComment?  @relation("ArticleCommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies    ArticleComment[] @relation("ArticleCommentReplies")
+  createdAt  DateTime         @default(now())
+
+  @@map("article_comments")
 }
 
 model Booking {
@@ -289,4 +323,37 @@ model TopUpRequest {
   updatedAt   DateTime    @updatedAt
 
   @@map("topup_requests")
+}
+
+model PaymentMethod {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  developerId String   @db.ObjectId
+  developer   Developer @relation(fields: [developerId], references: [id])
+  accountName String
+  qrCodeUrl   String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("payment_methods")
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model Withdrawal {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  developerId     String           @db.ObjectId
+  developer       Developer        @relation(fields: [developerId], references: [id])
+  amount          Float
+  paymentMethodId String           @db.ObjectId
+  status          WithdrawalStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("withdrawals")
 }

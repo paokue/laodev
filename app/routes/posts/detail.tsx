@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { getUser } from "@/lib/session.server"
 import type { Route } from "./+types/detail"
 import { Navigation } from "@/components/navigation"
+import { PendingReviewModal } from "@/components/pending-review-modal"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -180,6 +181,14 @@ export async function action({ request, params }: Route.ActionArgs) {
     } else {
       await prisma.savedPost.create({ data: { postId, userId: user.userId } })
       return { success: true, intent: "save-post", saved: true }
+    }
+  }
+
+  // Block pending developers from commenting
+  if (user.role === "DEVELOPER") {
+    const dev = await prisma.developer.findUnique({ where: { userId: user.userId }, select: { status: true } })
+    if (dev?.status === "PENDING") {
+      return { error: "pending_review", intent: "comment" }
     }
   }
 
@@ -490,6 +499,10 @@ export default function PostDetailPage() {
   }, [searchParams])
 
   useEffect(() => {
+    if (actionData && "error" in actionData && actionData.error === "pending_review") {
+      setShowPendingModal(true)
+      return
+    }
     if (actionData && "success" in actionData) {
       const intent = "intent" in actionData ? actionData.intent : "comment"
       if (intent === "comment") toast.success("Response submitted successfully!")
@@ -508,6 +521,7 @@ export default function PostDetailPage() {
   const [showCommentInput, setShowCommentInput] = useState<Record<string, boolean>>({})
   const [sortBy, setSortBy] = useState<"votes" | "newest">("votes")
   const [isCopied, setIsCopied] = useState(false)
+  const [showPendingModal, setShowPendingModal] = useState(false)
   const saveFetcher = useFetcher()
 
   // Optimistic save state
@@ -1099,6 +1113,7 @@ export default function PostDetailPage() {
         </div>
       </main>
 
+      <PendingReviewModal open={showPendingModal} onOpenChange={setShowPendingModal} />
       <Footer />
     </div>
   )

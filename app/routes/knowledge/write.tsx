@@ -49,6 +49,7 @@ import {
 import { toast } from "sonner"
 import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session.server"
+import { PendingReviewModal } from "@/components/pending-review-modal"
 import type { Route } from "./+types/write"
 
 const categories = [
@@ -79,6 +80,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         select: {
           id: true,
           title: true,
+          status: true,
         },
       },
     },
@@ -88,12 +90,19 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw new Response("Not found", { status: 404 })
   }
 
-  return { user }
+  return { user, isPending: user.developer.status === "PENDING" }
 }
 
 // --- Action: Create article ---
 export async function action({ request }: Route.ActionArgs) {
   const session = await requireUser(request, ["DEVELOPER", "ADMIN"])
+
+  // Block pending developers
+  const dev = await prisma.developer.findUnique({ where: { userId: session.userId }, select: { status: true } })
+  if (dev?.status === "PENDING") {
+    return { error: "Your account is under review. You cannot publish articles yet." }
+  }
+
   const formData = await request.formData()
 
   const title = String(formData.get("title") || "").trim()
@@ -130,7 +139,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 // --- Component ---
 export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps) {
-  const { user } = loaderData
+  const { user, isPending } = loaderData
   const actionData = useActionData<typeof action>()
   const navigation = useNavigation()
   const navigate = useNavigate()
@@ -146,6 +155,7 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
   const [isPreview, setIsPreview] = useState(false)
   const [showPublishSuccess, setShowPublishSuccess] = useState(false)
   const [publishedArticleId, setPublishedArticleId] = useState<string | null>(null)
+  const [showPendingModal, setShowPendingModal] = useState(isPending)
 
   const authorInitials = user.name
     .split(" ")
@@ -304,7 +314,7 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
                         placeholder="Article Title..."
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="border-0 bg-transparent text-3xl font-bold placeholder:text-muted-foreground/50 focus-visible:ring-0 px-0 h-auto py-2"
+                        className="border-border bg-transparent text-3xl font-bold placeholder:text-muted-foreground/50 focus-visible:ring-0 px-0 h-auto p-2"
                       />
                     </div>
 
@@ -532,9 +542,8 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
 
               {/* Sidebar */}
               <div className="space-y-6">
-                {/* Author Card */}
                 <Card className="border-border bg-card/50">
-                  <CardContent className="p-4">
+                  <CardContent className="px-4 py-0">
                     <h3 className="text-sm font-medium text-white mb-3">Publishing as</h3>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border border-border">
@@ -558,11 +567,11 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
 
                 {/* Category */}
                 <Card className="border-border bg-card/50">
-                  <CardContent className="p-4 space-y-4">
+                  <CardContent className="py-0 px-4 space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Category *</Label>
+                      <Label className="text-sm font-medium">Category <span className="text-rose-500">*</span></Label>
                       <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger className="border-border bg-card">
+                        <SelectTrigger className="border-border bg-card w-full">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent className="border-border bg-card/95 backdrop-blur-xl">
@@ -593,9 +602,9 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
                           type="button"
                           onClick={handleAddTag}
                           disabled={tags.length >= 5 || !tagInput.trim()}
-                          className="border-border shrink-0"
+                          className="border-primary/50 shrink-0 mt-2"
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4 text-primary" />
                         </Button>
                       </div>
                       {tags.length > 0 && (
@@ -619,43 +628,12 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
                         </div>
                       )}
                     </div>
-
-                    {/* Cover Image */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Cover Image URL (optional)</Label>
-                      <Input
-                        placeholder="https://example.com/image.jpg"
-                        value={coverImage}
-                        onChange={(e) => setCoverImage(e.target.value)}
-                        className="border-border bg-card"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Coffee Info */}
-                <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-card">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-full bg-amber-500/20 p-2">
-                        <Coffee className="h-5 w-5 text-amber-500" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium flex items-center gap-2">
-                          Earn Coffee Tips
-                          <Sparkles className="h-4 w-4 text-amber-500" />
-                        </h3>
-                        <p className="text-sm text-white mt-1">
-                          Share valuable knowledge and readers can show appreciation by buying you a coffee.
-                        </p>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
 
                 {/* Tips */}
                 <Card className="border-border bg-card/50">
-                  <CardContent className="p-4">
+                  <CardContent className="px-4 py-0">
                     <h3 className="text-sm font-medium flex items-center gap-2 mb-3">
                       <Info className="h-4 w-4 text-primary" />
                       Writing Tips
@@ -710,6 +688,14 @@ export default function WriteKnowledgePage({ loaderData }: Route.ComponentProps)
           </div>
         </DialogContent>
       </Dialog>
+
+      <PendingReviewModal
+        open={showPendingModal}
+        onOpenChange={(open) => {
+          setShowPendingModal(open)
+          if (!open) navigate("/knowledge")
+        }}
+      />
 
       <Footer />
     </div>

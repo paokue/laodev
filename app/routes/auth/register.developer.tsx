@@ -61,6 +61,9 @@ export async function action({ request }: Route.ActionArgs) {
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing && existing.emailVerified) return { error: "An account with this email already exists" }
+    if (existing && !existing.emailVerified && existing.role !== "DEVELOPER") {
+      return { error: "This email is already registered as a user. Please log in instead." }
+    }
 
     const otp = generateOtp()
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)

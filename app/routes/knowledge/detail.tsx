@@ -1,18 +1,21 @@
-import { useState } from "react"
-import { useParams, Link } from "react-router"
+import { useState, useEffect } from "react"
+import { Link, Form, useNavigation, useFetcher } from "react-router"
+import { toast } from "sonner"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { CoffeeModal } from "@/components/coffee-modal"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
+import { prisma } from "@/lib/prisma"
+import { getUser } from "@/lib/session.server"
+import type { Route } from "./+types/detail"
 import {
   Coffee,
   Heart,
   MessageSquare,
-  Share2,
   Bookmark,
   CheckCircle2,
   Eye,
@@ -20,207 +23,276 @@ import {
   Clock,
   Calendar,
   ThumbsUp,
-  Copy,
-  Twitter,
-  Linkedin,
-  Link2,
   Sparkles,
+  Send,
+  Reply,
 } from "lucide-react"
 
-// Mock article data
-const article = {
-  id: "1",
-  title: "Building Scalable APIs with Node.js and TypeScript in 2024",
-  excerpt: "Learn how to structure your Node.js APIs for scalability using TypeScript, clean architecture, and best practices from production systems.",
-  content: `
-## Introduction
+function timeAgo(date: Date): string {
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  if (diffMins < 60) return `${diffMins} min ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours} hours ago`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`
+  const diffWeeks = Math.floor(diffDays / 7)
+  return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`
+}
 
-Building scalable APIs is one of the most important skills for modern backend developers. In this comprehensive guide, I'll share my experience building production-ready APIs that serve millions of requests.
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const session = await getUser(request)
 
-## Why TypeScript?
+  // Increment view count
+  const article = await prisma.article.update({
+    where: { id: params.id },
+    data: { views: { increment: 1 } },
+    select: {
+      id: true,
+      title: true,
+      excerpt: true,
+      content: true,
+      category: true,
+      tags: true,
+      views: true,
+      likes: true,
+      coffeeCount: true,
+      readTime: true,
+      createdAt: true,
+      author: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          bio: true,
+          developer: {
+            select: {
+              title: true,
+              status: true,
+              location: true,
+            },
+          },
+        },
+      },
+    },
+  })
 
-TypeScript has become the de facto standard for large-scale Node.js applications. Here's why:
+  if (!article) {
+    throw new Response("Article not found", { status: 404 })
+  }
 
-- **Type Safety**: Catch errors at compile time rather than runtime
-- **Better IDE Support**: Enhanced autocomplete and refactoring capabilities
-- **Self-Documenting Code**: Types serve as inline documentation
-- **Easier Maintenance**: Types make it easier to understand large codebases
+  // Fetch top-level comments separately — use OR for MongoDB null/unset compatibility
+  const topLevelComments = await prisma.articleComment.findMany({
+    where: {
+      articleId: params.id,
+      OR: [{ parentId: null }, { parentId: { isSet: false } }],
+    },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      authorName: true,
+      authorId: true,
+      content: true,
+      likes: true,
+      createdAt: true,
+      replies: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          authorName: true,
+          authorId: true,
+          content: true,
+          likes: true,
+          createdAt: true,
+        },
+      },
+    },
+  })
 
-## Project Structure
+  // Related articles (same category, exclude current)
+  const relatedArticles = await prisma.article.findMany({
+    where: {
+      status: "published",
+      category: article.category,
+      id: { not: article.id },
+    },
+    orderBy: { views: "desc" },
+    take: 3,
+    select: {
+      id: true,
+      title: true,
+      coffeeCount: true,
+      author: { select: { name: true } },
+    },
+  })
 
-A well-organized project structure is crucial for scalability. Here's the structure I recommend:
+  // Count author's total articles, wallet balance, like count, and like status
+  const [authorArticleCount, currentUserWallet, userLike, articleLikeCount] = await Promise.all([
+    prisma.article.count({
+      where: { authorId: article.author.id, status: "published" },
+    }),
+    session
+      ? prisma.wallet.findUnique({
+          where: { userId: session.userId },
+          select: { balance: true },
+        })
+      : null,
+    session
+      ? prisma.articleLike.findUnique({
+          where: { articleId_userId: { articleId: params.id!, userId: session.userId } },
+          select: { id: true },
+        })
+      : null,
+    prisma.articleLike.count({ where: { articleId: params.id } }),
+  ])
 
-\`\`\`
-src/
-├── config/         # Configuration files
-├── controllers/    # Request handlers
-├── middleware/     # Custom middleware
-├── models/         # Database models
-├── routes/         # API routes
-├── services/       # Business logic
-├── utils/          # Utility functions
-└── validators/     # Request validation
-\`\`\`
-
-## Clean Architecture Principles
-
-Clean architecture separates concerns into layers:
-
-1. **Domain Layer**: Core business logic and entities
-2. **Application Layer**: Use cases and application services
-3. **Infrastructure Layer**: External services, databases, APIs
-4. **Presentation Layer**: Controllers and request handling
-
-## Error Handling
-
-Proper error handling is essential for a good API:
-
-\`\`\`typescript
-class AppError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public isOperational = true
-  ) {
-    super(message);
+  return {
+    article: {
+      ...article,
+      viewCount: article.views,
+      commentCount: topLevelComments.length + topLevelComments.reduce((sum: number, c: { replies: unknown[] }) => sum + c.replies.length, 0),
+      publishedAt: new Date(article.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      author: {
+        id: article.author.id,
+        name: article.author.name,
+        avatar: article.author.avatar || "",
+        title: article.author.developer?.title || "",
+        bio: article.author.bio || "",
+        location: article.author.developer?.location || "",
+        isVerified: article.author.developer?.status === "APPROVED" || article.author.developer?.status === "ACTIVE",
+      },
+    },
+    comments: topLevelComments.map((c) => ({
+      id: c.id,
+      authorName: c.authorName,
+      authorId: c.authorId,
+      content: c.content,
+      likes: c.likes,
+      timestamp: timeAgo(new Date(c.createdAt)),
+      replies: c.replies.map((r) => ({
+        id: r.id,
+        authorName: r.authorName,
+        authorId: r.authorId,
+        content: r.content,
+        likes: r.likes,
+        timestamp: timeAgo(new Date(r.createdAt)),
+      })),
+    })),
+    relatedArticles: relatedArticles.map((r) => ({
+      id: r.id,
+      title: r.title,
+      author: r.author.name,
+      coffeeCount: r.coffeeCount,
+    })),
+    authorArticleCount,
+    currentUserId: session?.userId || null,
+    currentUserName: session?.name || null,
+    walletBalance: currentUserWallet?.balance || 0,
+    isLiked: !!userLike,
+    likeCount: articleLikeCount,
   }
 }
 
-// Global error handler middleware
-const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      status: 'error',
-      message: err.message
-    });
+export async function action({ request, params }: Route.ActionArgs) {
+  const session = await getUser(request)
+  if (!session) {
+    return { error: "Please login to comment" }
   }
 
-  // Log unexpected errors
-  console.error(err);
-  return res.status(500).json({
-    status: 'error',
-    message: 'Internal server error'
-  });
-};
-\`\`\`
+  const formData = await request.formData()
+  const intent = String(formData.get("intent"))
 
-## Database Design Tips
+  if (intent === "like-article") {
+    const existing = await prisma.articleLike.findUnique({
+      where: { articleId_userId: { articleId: params.id!, userId: session.userId } },
+    })
+    if (existing) {
+      await prisma.articleLike.delete({ where: { id: existing.id } })
+      await prisma.article.update({ where: { id: params.id }, data: { likes: { decrement: 1 } } })
+    } else {
+      await prisma.articleLike.create({ data: { articleId: params.id!, userId: session.userId } })
+      await prisma.article.update({ where: { id: params.id }, data: { likes: { increment: 1 } } })
+    }
+    return { success: "ok", intent: "like-article" }
+  }
 
-When designing your database schema:
+  if (intent === "like-comment") {
+    const commentId = String(formData.get("commentId"))
+    await prisma.articleComment.update({
+      where: { id: commentId },
+      data: { likes: { increment: 1 } },
+    })
+    return { success: "Liked" }
+  }
 
-- **Normalize** your data to avoid redundancy
-- **Index** frequently queried fields
-- **Use transactions** for related operations
-- **Implement soft deletes** for data recovery
+  if (intent === "add-comment") {
+    const content = String(formData.get("content")).trim()
+    const parentId = formData.get("parentId") ? String(formData.get("parentId")) : null
+    if (!content) return { error: "Comment cannot be empty" }
 
-## Performance Optimization
+    await prisma.articleComment.create({
+      data: {
+        articleId: params.id!,
+        authorId: session.userId,
+        authorName: session.name,
+        content,
+        ...(parentId ? { parentId } : {}),
+      },
+    })
 
-Here are some techniques I use to optimize API performance:
+    return { success: "Comment posted" }
+  }
 
-1. **Caching**: Use Redis for frequently accessed data
-2. **Pagination**: Never return unbounded lists
-3. **Compression**: Enable gzip compression
-4. **Connection Pooling**: Reuse database connections
-5. **Query Optimization**: Use EXPLAIN to analyze queries
-
-## Conclusion
-
-Building scalable APIs requires careful planning and attention to best practices. By following clean architecture principles and implementing proper error handling, caching, and database design, you can build APIs that scale to millions of users.
-
-Feel free to reach out if you have any questions!
-  `,
-  author: {
-    id: "1",
-    name: "Somsak Phommavong",
-    avatar: "",
-    title: "Senior Full-Stack Developer",
-    bio: "8+ years building scalable applications. Passionate about clean code and mentoring junior developers.",
-    location: "Vientiane, Laos",
-    isVerified: true,
-    coffeePrice: 5,
-    totalCoffees: 234,
-    followers: 1250,
-    bankInfo: {
-      bankName: "BCEL",
-      accountNumber: "0102000012345678",
-      accountName: "SOMSAK PHOMMAVONG",
-    },
-    walletAddress: "020-1234-5678",
-  },
-  category: "Backend",
-  tags: ["Node.js", "TypeScript", "API Design", "Clean Architecture", "Best Practices"],
-  coffeeCount: 47,
-  likeCount: 234,
-  commentCount: 28,
-  viewCount: 1520,
-  readTime: 12,
-  publishedAt: "January 15, 2024",
-  isLiked: false,
-  isBookmarked: false,
+  return { error: "Invalid action" }
 }
 
-const comments = [
-  {
-    id: "1",
-    author: {
-      name: "Keo Bounyavong",
-      avatar: "",
-      isVerified: true,
-    },
-    content: "This is exactly what I needed! The clean architecture section is particularly helpful. I've been struggling with organizing my Node.js projects.",
-    timestamp: "2 days ago",
-    likes: 12,
-  },
-  {
-    id: "2",
-    author: {
-      name: "Vanida Keomany",
-      avatar: "",
-      isVerified: true,
-    },
-    content: "Great article! Would love to see a follow-up on testing strategies for these architectural patterns.",
-    timestamp: "1 day ago",
-    likes: 8,
-  },
-  {
-    id: "3",
-    author: {
-      name: "Bounmy Phonethip",
-      avatar: "",
-      isVerified: false,
-    },
-    content: "The error handling approach you described is much cleaner than what I was doing. Already refactored my code. Thanks!",
-    timestamp: "5 hours ago",
-    likes: 5,
-  },
-]
+function LikeButton({ commentId, likes }: { commentId: string; likes: number }) {
+  const fetcher = useFetcher()
+  const optimisticLikes = fetcher.state !== "idle" ? likes + 1 : likes
 
-const relatedArticles = [
-  { id: "2", title: "React Server Components: A Deep Dive", author: "Vanida Keomany", coffeeCount: 32 },
-  { id: "4", title: "Docker and Kubernetes for Beginners", author: "Thongchanh Sisouphon", coffeeCount: 56 },
-  { id: "5", title: "Building Your First Smart Contract", author: "Singkham Vongphachanh", coffeeCount: 28 },
-]
+  return (
+    <fetcher.Form method="post">
+      <input type="hidden" name="intent" value="like-comment" />
+      <input type="hidden" name="commentId" value={commentId} />
+      <Button
+        type="submit"
+        variant="ghost"
+        size="sm"
+        className="gap-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10"
+      >
+        <ThumbsUp className="h-3.5 w-3.5" />
+        {optimisticLikes}
+      </Button>
+    </fetcher.Form>
+  )
+}
 
-export default function KnowledgeDetailPage() {
-  const params = useParams()
-  const [isLiked, setIsLiked] = useState(article.isLiked)
-  const [likeCount, setLikeCount] = useState(article.likeCount)
-  const [isBookmarked, setIsBookmarked] = useState(article.isBookmarked)
-  const [coffeeCount, setCoffeeCount] = useState(article.coffeeCount)
-  const [newComment, setNewComment] = useState("")
-  const [coffeeAmount, setCoffeeAmount] = useState(1)
-  const [showCoffeeSuccess, setShowCoffeeSuccess] = useState(false)
+export default function KnowledgeDetailPage({ loaderData, actionData }: Route.ComponentProps) {
+  const { article, comments, relatedArticles, authorArticleCount, currentUserId, walletBalance, isLiked: initialIsLiked, likeCount: initialLikeCount } = loaderData
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const likeFetcher = useFetcher()
+  const isLikeSubmitting = likeFetcher.state !== "idle"
+  const optimisticIsLiked = isLikeSubmitting ? !initialIsLiked : initialIsLiked
+  const optimisticLikeCount = isLikeSubmitting
+    ? initialIsLiked ? initialLikeCount - 1 : initialLikeCount + 1
+    : initialLikeCount
+  const [showReplyInput, setShowReplyInput] = useState<Record<string, boolean>>({})
+  const navigation = useNavigation()
+  const isSubmitting = navigation.state === "submitting"
 
-  const handleLike = () => {
-    setIsLiked(!isLiked)
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
-  }
-
-  const handleCoffee = () => {
-    setCoffeeCount(coffeeCount + coffeeAmount)
-    setShowCoffeeSuccess(true)
-    setTimeout(() => setShowCoffeeSuccess(false), 3000)
-  }
+  useEffect(() => {
+    if (actionData?.success) {
+      toast.success("Comment posted!")
+    }
+    if (actionData?.error) {
+      toast.error(actionData.error)
+    }
+  }, [actionData])
 
   const authorInitials = article.author.name
     .split(" ")
@@ -276,287 +348,264 @@ export default function KnowledgeDetailPage() {
               ))}
             </div>
 
-            {/* Author & Date */}
-            <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-card/50 border border-border">
-              <Link to={`/developers/${article.author.id}`} className="flex items-center gap-4 group">
-                <Avatar className="h-14 w-14 border-2 border-border transition-all group-hover:border-primary/50">
-                  <AvatarImage src={article.author.avatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary font-semibold">
-                    {authorInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold group-hover:text-primary transition-colors">
-                      {article.author.name}
-                    </span>
-                    {article.author.isVerified && (
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                    )}
-                  </div>
-                  <p className="text-sm text-white">{article.author.title}</p>
-                  <div className="flex items-center gap-2 text-xs text-white mt-1">
-                    <Calendar className="h-3 w-3" />
-                    {article.publishedAt}
-                  </div>
-                </div>
-              </Link>
-
-              {/* Coffee Button */}
-              <CoffeeModal
-                writer={{
-                  id: article.author.id,
-                  name: article.author.name,
-                  avatar: article.author.avatar,
-                  title: article.author.title,
-                  location: article.author.location,
-                  isVerified: article.author.isVerified,
-                  totalCoffees: article.author.totalCoffees,
-                  bio: article.author.bio,
-                  bankInfo: article.author.bankInfo,
-                  walletAddress: article.author.walletAddress,
-                }}
-                coffeePrice={article.author.coffeePrice}
-              >
-                <Button className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
-                  <Coffee className="h-4 w-4" />
-                  Buy a Coffee
-                </Button>
-              </CoffeeModal>
-            </div>
           </header>
 
-          {/* Article Content */}
-          <div className="prose prose-invert prose-emerald max-w-none">
-            <div className="whitespace-pre-line text-white/90 leading-relaxed">
-              {article.content.split('\n').map((line, i) => {
-                if (line.startsWith('## ')) {
-                  return <h2 key={i} className="text-2xl font-bold mt-10 mb-4 text-white">{line.replace('## ', '')}</h2>
-                }
-                if (line.startsWith('```')) {
-                  return null
-                }
-                if (line.startsWith('- ')) {
-                  return <li key={i} className="ml-6 text-white/80">{line.replace('- ', '')}</li>
-                }
-                if (line.startsWith('1. ') || line.match(/^\d\. /)) {
-                  return <li key={i} className="ml-6 text-white/80 list-decimal">{line.replace(/^\d\. /, '')}</li>
-                }
-                if (line.trim() === '') {
-                  return <br key={i} />
-                }
-                return <p key={i} className="my-4 text-white/80">{line}</p>
-              })}
-            </div>
-          </div>
-
-          {/* Action Bar */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-card/50 border border-border">
-            <div className="flex items-center gap-2">
-              <Button
-                variant={isLiked ? "default" : "outline"}
-                size="sm"
-                onClick={handleLike}
-                className={`gap-2 ${isLiked ? "bg-red-500 hover:bg-red-600 border-red-500" : "border-border"}`}
-              >
-                <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-                {likeCount}
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2 border-border">
-                <MessageSquare className="h-4 w-4" />
-                {article.commentCount}
-              </Button>
-              <Button
-                variant={isBookmarked ? "default" : "outline"}
-                size="sm"
-                onClick={() => setIsBookmarked(!isBookmarked)}
-                className={`gap-2 ${isBookmarked ? "bg-primary" : "border-border"}`}
-              >
-                <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-                Save
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-white">Share:</span>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Linkedin className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Link2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Coffee Supporters */}
-          <div className="mt-10 p-6 rounded-xl bg-gradient-to-br from-amber-500/10 to-card border border-amber-500/20">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Coffee className="h-5 w-5 text-amber-500" />
-                {coffeeCount} Coffees Received
-              </h3>
-              <CoffeeModal
-                writer={{
-                  id: article.author.id,
-                  name: article.author.name,
-                  avatar: article.author.avatar,
-                  title: article.author.title,
-                  location: article.author.location,
-                  isVerified: article.author.isVerified,
-                  totalCoffees: article.author.totalCoffees,
-                  bio: article.author.bio,
-                  bankInfo: article.author.bankInfo,
-                  walletAddress: article.author.walletAddress,
-                }}
-                coffeePrice={article.author.coffeePrice}
-              >
-                <Button size="sm" className="gap-2 bg-amber-500 hover:bg-amber-600 text-white">
-                  <Coffee className="h-4 w-4" />
-                  Support
-                </Button>
-              </CoffeeModal>
-            </div>
-            <p className="text-sm text-white">
-              If you found this article helpful, consider buying the author a coffee to support their work.
-            </p>
-          </div>
-
-          {/* Author Card */}
-          <Card className="mt-10 border-border bg-card/50 overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row gap-6">
-                <Avatar className="h-20 w-20 border-2 border-border mx-auto sm:mx-0">
-                  <AvatarImage src={article.author.avatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary text-xl font-semibold">
-                    {authorInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-center sm:text-left">
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <h3 className="text-lg font-semibold">{article.author.name}</h3>
-                    {article.author.isVerified && (
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                    )}
-                  </div>
-                  <p className="text-sm text-white">{article.author.title}</p>
-                  <p className="mt-2 text-sm text-white/80">{article.author.bio}</p>
-                  <div className="mt-4 flex items-center justify-center sm:justify-start gap-4">
-                    <div className="text-center">
-                      <p className="font-semibold">{article.author.followers}</p>
-                      <p className="text-xs text-white">Followers</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-semibold text-amber-500">{article.author.totalCoffees}</p>
-                      <p className="text-xs text-white">Coffees</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                    <Link to={`/developers/${article.author.id}`}>
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto gap-2 border-border">
-                        View Profile
-                      </Button>
-                    </Link>
-                    <Button size="sm" className="w-full sm:w-auto gap-2">
-                      <Sparkles className="h-4 w-4" />
-                      Follow
-                    </Button>
-                  </div>
+          {/* Article Content Card */}
+          <Card className="overflow-hidden">
+            <CardContent className="py-0 px-4 sm:py-6 sm:px-6">
+              <div className="prose prose-invert prose-emerald max-w-none">
+                <div className="whitespace-pre-line text-white/90 leading-relaxed">
+                  {article.content.split('\n').map((line, i) => {
+                    if (line.startsWith('## ')) {
+                      return <h2 key={i} className="text-2xl font-bold mt-10 mb-4 text-white">{line.replace('## ', '')}</h2>
+                    }
+                    if (line.startsWith('```')) {
+                      return null
+                    }
+                    if (line.startsWith('- ')) {
+                      return <li key={i} className="ml-6 text-white/80">{line.replace('- ', '')}</li>
+                    }
+                    if (line.match(/^\d\. /)) {
+                      return <li key={i} className="ml-6 text-white/80 list-decimal">{line.replace(/^\d\. /, '')}</li>
+                    }
+                    if (line.trim() === '') {
+                      return <br key={i} />
+                    }
+                    return <p key={i} className="my-4 text-white/80">{line}</p>
+                  })}
                 </div>
+              </div>
+
+              {/* Tags */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                {article.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+
+              {/* Card Footer */}
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsBookmarked(!isBookmarked)}
+                    className="gap-1"
+                  >
+                    <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : ""}`} />
+                    {isBookmarked ? "Saved" : "Save"}
+                  </Button>
+                  <likeFetcher.Form method="post">
+                    <input type="hidden" name="intent" value="like-article" />
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1"
+                    >
+                      <Heart className={`h-4 w-4 ${optimisticIsLiked ? "fill-primary text-primary" : ""}`} />
+                      {optimisticLikeCount}
+                    </Button>
+                  </likeFetcher.Form>
+                  <CoffeeModal
+                    writer={{
+                      id: article.author.id,
+                      name: article.author.name,
+                      avatar: article.author.avatar,
+                      title: article.author.title,
+                      location: article.author.location,
+                      isVerified: article.author.isVerified,
+                      bio: article.author.bio,
+                    }}
+                    walletBalance={walletBalance}
+                  >
+                    <Button variant="ghost" size="sm" className="gap-1 text-amber-500 hover:text-amber-500">
+                      <Coffee className="h-4 w-4" />
+                      Buy Coffee ({article.coffeeCount})
+                    </Button>
+                  </CoffeeModal>
+                </div>
+
+                {/* Author mini card */}
+                <Link to={`/developers/${article.author.id}`} className="flex items-center gap-3 rounded-lg bg-secondary/50 p-3 hover:bg-secondary/70 transition-colors">
+                  <Avatar className="h-10 w-10 border-2 border-primary/30">
+                    <AvatarImage src={article.author.avatar} />
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {authorInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium">{article.author.name}</p>
+                      {article.author.isVerified && (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-white">
+                      <span>{article.author.title}</span>
+                      <span>·</span>
+                      <span>{authorArticleCount} articles</span>
+                    </div>
+                  </div>
+                </Link>
               </div>
             </CardContent>
           </Card>
 
           {/* Comments Section */}
           <section className="mt-10">
-            <h2 className="text-xl font-semibold flex items-center gap-2 mb-6">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              Comments ({comments.length})
-            </h2>
-
-            {/* New Comment */}
-            <div className="mb-8 p-4 rounded-xl bg-card/50 border border-border">
-              <Textarea
-                placeholder="Share your thoughts..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="mb-3 bg-background border-border focus:border-primary/50 resize-none"
-                rows={3}
-              />
-              <div className="flex justify-end">
-                <Button disabled={!newComment.trim()} className="gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Post Comment
-                </Button>
-              </div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                {comments.length} Comment{comments.length !== 1 ? "s" : ""}
+              </h2>
             </div>
 
             {/* Comments List */}
-            <div className="space-y-6">
-              {comments.map((comment) => {
-                const commentInitials = comment.author.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-
-                return (
-                  <div key={comment.id} className="flex gap-4 p-4 rounded-xl bg-card/30 border border-border">
-                    <Avatar className="h-10 w-10 border border-border">
-                      <AvatarImage src={comment.author.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary text-xs font-semibold">
-                        {commentInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{comment.author.name}</span>
-                        {comment.author.isVerified && (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                        )}
-                        <span className="text-xs text-white">{comment.timestamp}</span>
-                      </div>
-                      <p className="mt-2 text-sm text-white/80">{comment.content}</p>
-                      <div className="mt-3 flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-white hover:text-white">
-                          <ThumbsUp className="h-3.5 w-3.5" />
-                          {comment.likes}
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 text-white hover:text-white">
-                          Reply
-                        </Button>
+            <div className="space-y-4 mb-6">
+              {comments.length === 0 && (
+                <p className="text-sm text-white text-center py-8">No comments yet. Be the first!</p>
+              )}
+              {comments.map((comment) => (
+                <Card key={comment.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="h-8 w-8 border border-border">
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {comment.authorName[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">{comment.authorName}</p>
+                        <p className="text-xs text-white">{comment.timestamp}</p>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                    <div className="whitespace-pre-wrap text-white/90 leading-relaxed text-sm">
+                      {comment.content}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="mt-4 flex items-center gap-3 pt-3 border-t border-border">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10"
+                        onClick={() => setShowReplyInput(prev => ({ ...prev, [comment.id]: !prev[comment.id] }))}
+                      >
+                        <Reply className="h-3.5 w-3.5" />
+                        Reply
+                      </Button>
+                      <LikeButton commentId={comment.id} likes={comment.likes} />
+                    </div>
+
+                    {/* Nested Replies */}
+                    {comment.replies && comment.replies.length > 0 && (
+                      <div className="mt-4 ml-6 space-y-3 border-l-2 border-primary/20 pl-4">
+                        {comment.replies.map((reply) => (
+                          <div key={reply.id} className="py-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Avatar className="h-6 w-6 border border-border">
+                                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                                  {reply.authorName[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium text-primary">{reply.authorName}</span>
+                              <span className="text-xs text-white">{reply.timestamp}</span>
+                            </div>
+                            <div className="flex items-center gap-2 ml-8 mt-1">
+                              <p className="text-sm text-white/80 flex-1">{reply.content}</p>
+                              <LikeButton commentId={reply.id} likes={reply.likes} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Reply Input */}
+                    {showReplyInput[comment.id] && currentUserId && (
+                      <div className="mt-3 ml-6 border-l-2 border-primary/20 pl-4">
+                        <Form method="post" className="flex gap-2" key={`reply-${comment.id}-${comment.replies?.length || 0}`}>
+                          <input type="hidden" name="intent" value="add-comment" />
+                          <input type="hidden" name="parentId" value={comment.id} />
+                          <Textarea
+                            name="content"
+                            placeholder="Write a reply..."
+                            className="min-h-[60px] flex-1 text-sm"
+                            required
+                          />
+                          <Button type="submit" size="icon" className="shrink-0 self-end" disabled={isSubmitting}>
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </Form>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+
+            {/* Post New Comment */}
+            {currentUserId ? (
+              <Card>
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Leave a Comment</h3>
+                  <p className="text-sm text-white">Share your thoughts on this article</p>
+                </CardHeader>
+                <CardContent className="p-2 sm:p-6">
+                  <Form method="post" className="space-y-4" key={comments.length}>
+                    <input type="hidden" name="intent" value="add-comment" />
+                    <Textarea
+                      name="content"
+                      placeholder="Write your comment here..."
+                      className="min-h-[120px]"
+                      required
+                    />
+                    <div className="flex justify-end">
+                      <Button type="submit" disabled={isSubmitting} className="gap-2">
+                        <Send className="h-4 w-4" />
+                        {isSubmitting ? "Posting..." : "Post Comment"}
+                      </Button>
+                    </div>
+                  </Form>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-white">
+                    <Link to="/login" className="text-primary hover:underline">Log in</Link> to leave a comment
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </section>
 
           {/* Related Articles */}
-          <section className="mt-10">
-            <h2 className="text-xl font-semibold mb-6">Related Articles</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {relatedArticles.map((related) => (
-                <Link key={related.id} to={`/knowledge/${related.id}`}>
-                  <Card className="h-full border-border bg-card/50 hover:border-primary/50 hover:bg-card transition-all">
-                    <CardContent className="p-4">
-                      <h3 className="font-medium line-clamp-2 hover:text-primary transition-colors">
-                        {related.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-white">{related.author}</p>
-                      <div className="mt-3 flex items-center gap-1 text-sm text-amber-500">
-                        <Coffee className="h-3.5 w-3.5" />
-                        {related.coffeeCount}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
+          {relatedArticles.length > 0 && (
+            <section className="mt-10">
+              <h2 className="text-xl font-semibold mb-6">Related Articles</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {relatedArticles.map((related) => (
+                  <Link key={related.id} to={`/knowledge/${related.id}`}>
+                    <Card className="h-full border-border bg-card/50 hover:border-primary/50 hover:bg-card transition-all">
+                      <CardContent className="p-4 border border-rose-500">
+                        <h3 className="font-medium line-clamp-2 hover:text-primary transition-colors">
+                          {related.title}
+                        </h3>
+                        <p className="mt-2 text-sm text-white">{related.author}</p>
+                        <div className="mt-3 flex items-center gap-1 text-sm text-amber-500">
+                          <Coffee className="h-3.5 w-3.5" />
+                          {related.coffeeCount}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </article>
       </main>
 

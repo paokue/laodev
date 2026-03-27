@@ -466,7 +466,7 @@ function ProfileForm({
                   <span className="font-medium">{dev.rating}</span>
                   <span className="text-muted-foreground">({dev.reviewCount} reviews)</span>
                 </div>
-                {dev.status === "APPROVED" && (
+                {(dev.status === "APPROVED" || dev.status === "ACTIVE") && (
                   <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                     <Shield className="mr-1 h-3 w-3" />
                     Verified

@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useFetcher } from "react-router"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 import { DataTable, Column, FilterOption } from "@/components/admin/data-table"
+import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session.server"
+import { toast } from "sonner"
+import type { Route } from "./+types/developers"
 import {
   MoreHorizontal,
   Eye,
@@ -43,138 +48,141 @@ interface Developer {
   hourlyRate: number
   bio: string
   appliedAt: string
-  status: "pending" | "approved" | "rejected"
+  status: "pending" | "active" | "rejected"
   bookings?: number
   rating?: number
 }
 
-const developers: Developer[] = [
-  {
-    id: "1",
-    name: "Khamphanh Sengmany",
-    email: "khamphanh@email.com",
-    title: "Frontend Developer",
-    location: "Vientiane",
-    skills: ["React", "TypeScript", "Tailwind CSS", "Next.js"],
-    experience: "3-5",
-    hourlyRate: 35,
-    bio: "Passionate frontend developer with 4 years of experience building modern web applications.",
-    appliedAt: "2 hours ago",
-    status: "pending",
-  },
-  {
-    id: "2",
-    name: "Vilay Southammavong",
-    email: "vilay@email.com",
-    title: "Data Scientist",
-    location: "Luang Prabang",
-    skills: ["Python", "TensorFlow", "Data Analysis", "Machine Learning"],
-    experience: "5-7",
-    hourlyRate: 50,
-    bio: "Data scientist with expertise in machine learning and AI.",
-    appliedAt: "5 hours ago",
-    status: "pending",
-  },
-  {
-    id: "3",
-    name: "Chanthone Keobounphanh",
-    email: "chanthone@email.com",
-    title: "Backend Developer",
-    location: "Savannakhet",
-    skills: ["Node.js", "Python", "PostgreSQL", "Docker"],
-    experience: "5-7",
-    hourlyRate: 45,
-    bio: "Experienced backend developer specializing in building scalable APIs.",
-    appliedAt: "1 day ago",
-    status: "pending",
-  },
-  {
-    id: "4",
-    name: "Somsak Phommavong",
-    email: "somsak@email.com",
-    title: "Senior Full-Stack Developer",
-    location: "Vientiane",
-    skills: ["React", "Node.js", "TypeScript", "AWS"],
-    experience: "7-10",
-    hourlyRate: 55,
-    bio: "Full-stack developer with 8+ years of experience.",
-    appliedAt: "1 week ago",
-    status: "approved",
-    bookings: 45,
-    rating: 4.9,
-  },
-  {
-    id: "5",
-    name: "Keo Bounsavath",
-    email: "keo@email.com",
-    title: "Mobile Developer",
-    location: "Luang Prabang",
-    skills: ["React Native", "Flutter", "iOS", "Android"],
-    experience: "3-5",
-    hourlyRate: 40,
-    bio: "Mobile developer passionate about creating beautiful apps.",
-    appliedAt: "2 weeks ago",
-    status: "approved",
-    bookings: 28,
-    rating: 4.7,
-  },
-  {
-    id: "6",
-    name: "Rejected Developer",
-    email: "rejected@email.com",
-    title: "Junior Developer",
-    location: "Pakse",
-    skills: ["HTML", "CSS"],
-    experience: "1-2",
-    hourlyRate: 15,
-    bio: "Beginner developer.",
-    appliedAt: "2 weeks ago",
-    status: "rejected",
-  },
-  {
-    id: "7",
-    name: "Khamla Phommachan",
-    email: "khamla@email.com",
-    title: "DevOps Engineer",
-    location: "Vientiane",
-    skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
-    experience: "5-7",
-    hourlyRate: 50,
-    bio: "DevOps engineer helping teams deploy faster and more reliably.",
-    appliedAt: "3 days ago",
-    status: "approved",
-    bookings: 15,
-    rating: 4.8,
-  },
-]
+function formatExperience(years: number): string {
+  if (years <= 2) return "1-2"
+  if (years <= 5) return "3-5"
+  if (years <= 7) return "5-7"
+  return "7-10"
+}
 
-export default function AdminDevelopersPage() {
+function timeAgo(date: Date): string {
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  if (diffHours < 1) return "Just now"
+  if (diffHours < 24) return `${diffHours} hours ago`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`
+  const diffWeeks = Math.floor(diffDays / 7)
+  return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  await requireUser(request, ["ADMIN"])
+
+  const developers = await prisma.developer.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      location: true,
+      skills: true,
+      experience: true,
+      hourlyRate: true,
+      status: true,
+      rating: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+          bio: true,
+        },
+      },
+      _count: {
+        select: { bookings: true },
+      },
+    },
+  })
+
+  return {
+    developers: developers.map((dev) => ({
+      id: dev.id,
+      name: dev.user.name,
+      email: dev.user.email,
+      title: dev.title,
+      location: dev.location || "",
+      skills: dev.skills,
+      experience: formatExperience(dev.experience),
+      hourlyRate: dev.hourlyRate,
+      bio: dev.user.bio || "",
+      appliedAt: timeAgo(new Date(dev.createdAt)),
+      status: dev.status.toLowerCase() as Developer["status"],
+      bookings: dev._count.bookings,
+      rating: dev.rating,
+    })),
+  }
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  await requireUser(request, ["ADMIN"])
+  const formData = await request.formData()
+  const intent = String(formData.get("intent"))
+  const developerId = String(formData.get("developerId"))
+
+  if (!developerId) {
+    return { error: "Developer ID is required" }
+  }
+
+  if (intent === "approve") {
+    await prisma.developer.update({
+      where: { id: developerId },
+      data: { status: "ACTIVE" },
+    })
+    return { success: "Developer approved" }
+  }
+
+  if (intent === "reject") {
+    await prisma.developer.update({
+      where: { id: developerId },
+      data: { status: "REJECTED" },
+    })
+    return { success: "Developer rejected" }
+  }
+
+  return { error: "Invalid action" }
+}
+
+export default function AdminDevelopersPage({ loaderData }: Route.ComponentProps) {
   const [selectedDeveloper, setSelectedDeveloper] = useState<Developer | null>(null)
   const [showRejectDialog, setShowRejectDialog] = useState(false)
   const [rejectReason, setRejectReason] = useState("")
-  const [localDevelopers, setLocalDevelopers] = useState(developers)
+  const fetcher = useFetcher<typeof action>()
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      toast.success(fetcher.data.success)
+      setSelectedDeveloper(null)
+      setShowRejectDialog(false)
+      setRejectReason("")
+    }
+    if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data])
 
   const handleApprove = (id: string) => {
-    setLocalDevelopers(
-      localDevelopers.map((dev) =>
-        dev.id === id ? { ...dev, status: "approved" as const, bookings: 0, rating: 0 } : dev
-      )
+    fetcher.submit(
+      { intent: "approve", developerId: id },
+      { method: "post" }
     )
-    setSelectedDeveloper(null)
   }
 
   const handleReject = () => {
     if (selectedDeveloper) {
-      setLocalDevelopers(
-        localDevelopers.map((dev) =>
-          dev.id === selectedDeveloper.id ? { ...dev, status: "rejected" as const } : dev
-        )
+      fetcher.submit(
+        { intent: "reject", developerId: selectedDeveloper.id },
+        { method: "post" }
       )
-      setShowRejectDialog(false)
-      setSelectedDeveloper(null)
-      setRejectReason("")
     }
   }
+
+  const localDevelopers = loaderData.developers
 
   const filters: FilterOption[] = [
     {
@@ -182,7 +190,7 @@ export default function AdminDevelopersPage() {
       label: "Status",
       options: [
         { value: "pending", label: "Pending" },
-        { value: "approved", label: "Approved" },
+        { value: "active", label: "Active" },
         { value: "rejected", label: "Rejected" },
       ],
     },
@@ -217,11 +225,11 @@ export default function AdminDevelopersPage() {
             Pending
           </Badge>
         )
-      case "approved":
+      case "active":
         return (
           <Badge variant="outline" className="border-emerald-500/50 bg-emerald-500/10 text-emerald-500">
             <CheckCircle2 className="mr-1 h-3 w-3" />
-            Approved
+            Active
           </Badge>
         )
       case "rejected":
@@ -300,7 +308,7 @@ export default function AdminDevelopersPage() {
       key: "bookings",
       label: "Stats",
       render: (dev) =>
-        dev.status === "approved" && dev.bookings !== undefined ? (
+        dev.status === "active" && dev.bookings !== undefined ? (
           <div className="text-sm">
             <p>{dev.bookings} bookings</p>
             {dev.rating && (
@@ -416,7 +424,7 @@ export default function AdminDevelopersPage() {
 
   // Stats
   const pendingCount = localDevelopers.filter((d) => d.status === "pending").length
-  const approvedCount = localDevelopers.filter((d) => d.status === "approved").length
+  const activeCount = localDevelopers.filter((d) => d.status === "active").length
   const rejectedCount = localDevelopers.filter((d) => d.status === "rejected").length
 
   return (
@@ -450,8 +458,8 @@ export default function AdminDevelopersPage() {
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-sm text-white">Approved</p>
-                <p className="text-2xl font-bold">{approvedCount}</p>
+                <p className="text-sm text-white">Active</p>
+                <p className="text-2xl font-bold">{activeCount}</p>
               </div>
             </div>
           </CardContent>
@@ -586,7 +594,7 @@ export default function AdminDevelopersPage() {
                   </div>
                 </div>
 
-                {selectedDeveloper.status === "approved" &&
+                {selectedDeveloper.status === "active" &&
                   selectedDeveloper.bookings !== undefined && (
                     <div className="grid grid-cols-2 gap-4 rounded-lg bg-muted/50 p-4">
                       <div>

@@ -34,6 +34,7 @@ import { Footer } from "@/components/footer"
 import { prisma } from "@/lib/prisma"
 import { requireUser } from "@/lib/session.server"
 import { toast } from "sonner"
+import { PendingReviewModal } from "@/components/pending-review-modal"
 import type { Route } from "./+types/articles"
 import {
   Calendar,
@@ -83,7 +84,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { name: true },
+    select: { name: true, developer: { select: { status: true } } },
   })
 
   const articles = await prisma.article.findMany({
@@ -106,6 +107,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     userName: user?.name ?? "Developer",
+    isPending: user?.developer?.status === "PENDING",
     articles,
     totalArticles: articles.length,
     publishedCount: articles.filter((a) => a.status === "published").length,
@@ -141,10 +143,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 // --- Component ---
 export default function DeveloperArticlesPage({ loaderData }: Route.ComponentProps) {
-  const { userName, articles, totalArticles, publishedCount, draftCount, totalViews } = loaderData
+  const { userName, isPending, articles, totalArticles, publishedCount, draftCount, totalViews } = loaderData
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [showPendingModal, setShowPendingModal] = useState(false)
 
   const filtered = articles.filter((article) => {
     const matchesSearch =
@@ -170,12 +173,19 @@ export default function DeveloperArticlesPage({ loaderData }: Route.ComponentPro
               </h1>
               <p className="mt-1 text-muted-foreground">Manage your knowledge sharing articles</p>
             </div>
-            <Button asChild className="gap-2">
-              <Link to="/knowledge/write">
+            {isPending ? (
+              <Button className="gap-2" onClick={() => setShowPendingModal(true)}>
                 <Plus className="h-4 w-4" />
                 Write Article
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button asChild className="gap-2">
+                <Link to="/knowledge/write">
+                  <Plus className="h-4 w-4" />
+                  Write Article
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Stats */}
@@ -285,12 +295,19 @@ export default function DeveloperArticlesPage({ loaderData }: Route.ComponentPro
                     : "Try adjusting your search or filters."}
                 </p>
                 {totalArticles === 0 && (
-                  <Button asChild className="gap-2">
-                    <Link to="/knowledge/write">
+                  isPending ? (
+                    <Button className="gap-2" onClick={() => setShowPendingModal(true)}>
                       <Plus className="h-4 w-4" />
                       Write Your First Article
-                    </Link>
-                  </Button>
+                    </Button>
+                  ) : (
+                    <Button asChild className="gap-2">
+                      <Link to="/knowledge/write">
+                        <Plus className="h-4 w-4" />
+                        Write Your First Article
+                      </Link>
+                    </Button>
+                  )
                 )}
               </CardContent>
             </Card>
@@ -308,6 +325,7 @@ export default function DeveloperArticlesPage({ loaderData }: Route.ComponentPro
         <Footer />
       </div>
 
+      <PendingReviewModal open={showPendingModal} onOpenChange={setShowPendingModal} />
       <BottomBar items={bottomBarItems} />
     </div>
   )
