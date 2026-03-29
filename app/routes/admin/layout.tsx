@@ -5,7 +5,7 @@ import {
   Users,
   UserCheck,
   FileText,
-  MessageSquare,
+  // MessageSquare,
   Settings,
   LogOut,
   Menu,
@@ -19,27 +19,43 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { requireAdmin } from "@/lib/admin-session.server"
+import { prisma } from "@/lib/prisma"
 import type { Route } from "./+types/layout"
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/developers", label: "Developers", icon: UserCheck },
+  { href: "/admin/developers", label: "Developers", icon: UserCheck, badgeKey: "pendingDevs" },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/posts", label: "Posts", icon: FileText },
-  { href: "/admin/knowledge", label: "Knowledge", icon: BookOpen },
-  { href: "/admin/bookings", label: "Bookings", icon: Calendar },
-  { href: "/admin/payments", label: "Payments", icon: DollarSign },
-  { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+  { href: "/admin/knowledge", label: "Knowledge", icon: BookOpen, badgeKey: "pendingArticles" },
+  { href: "/admin/bookings", label: "Bookings", icon: Calendar, badgeKey: "pendingBookings" },
+  { href: "/admin/payments", label: "Payments", icon: DollarSign, badgeKey: "pendingPayments" },
+  // { href: "/admin/messages", label: "Messages", icon: MessageSquare },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
 export async function loader({ request }: Route.LoaderArgs) {
   const admin = await requireAdmin(request)
-  return { admin }
+
+  const [pendingDevs, pendingBookings, pendingPayments] = await Promise.all([
+    prisma.developer.count({ where: { status: "PENDING" } }),
+    prisma.booking.count({ where: { status: "PENDING" } }),
+    prisma.topUpRequest.count({ where: { status: "PENDING" } }),
+  ])
+
+  return {
+    admin,
+    badges: {
+      pendingDevs,
+      pendingArticles: 0,
+      pendingBookings,
+      pendingPayments,
+    },
+  }
 }
 
 export default function AdminLayout({ loaderData }: Route.ComponentProps) {
-  const { admin } = loaderData
+  const { admin, badges } = loaderData
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -58,13 +74,18 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-border px-4">
-          <Link to="/admin" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Code2 className="h-5 w-5 text-primary-foreground" />
+        {/* Admin Profile */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+          <Link to="/admin" className="flex items-center gap-3">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{admin.name}</p>
+              <p className="truncate text-xs text-white">{admin.email}</p>
             </div>
-            <span className="text-xl font-semibold tracking-tight">Admin</span>
           </Link>
           <Button
             variant="ghost"
@@ -94,29 +115,30 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
               >
                 <link.icon className="h-4 w-4" />
                 {link.label}
+                {link.badgeKey && badges[link.badgeKey as keyof typeof badges] > 0 && (
+                  <span className={cn(
+                    "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+                    isActive
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-primary text-primary-foreground"
+                  )}>
+                    {badges[link.badgeKey as keyof typeof badges]}
+                  </span>
+                )}
               </Link>
             )
           })}
         </nav>
 
-        {/* Admin User Section */}
+        {/* Logout */}
         <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium">{admin.name}</p>
-              <p className="truncate text-xs text-white">{admin.email}</p>
-            </div>
-            <Link to="/admin/logout">
-              <Button variant="ghost" size="sm">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
+          <Link
+            to="/admin/logout"
+            className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Link>
         </div>
       </aside>
 
