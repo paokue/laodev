@@ -47,7 +47,7 @@ const categories = [
 export async function loader({ request }: Route.LoaderArgs) {
   const [articles, stats, topContributors] = await Promise.all([
     prisma.article.findMany({
-      where: { status: "published" },
+      where: { status: { not: "hidden" } },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -55,6 +55,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         excerpt: true,
         category: true,
         tags: true,
+        status: true,
         views: true,
         coffeeCount: true,
         readTime: true,
@@ -75,14 +76,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     Promise.all([
       prisma.walletTransaction.count({ where: { type: "COFFEE_TIP" } }),
-      prisma.article.count({ where: { status: "published" } }),
+      prisma.article.count({ where: { status: { not: "hidden" } } }),
       prisma.article.findMany({
-        where: { status: "published" },
+        where: { status: { not: "hidden" } },
         select: { authorId: true },
         distinct: ["authorId"],
       }),
       prisma.article.aggregate({
-        where: { status: "published" },
+        where: { status: { not: "hidden" } },
         _sum: { views: true },
       }),
     ]),
@@ -122,6 +123,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     id: article.id,
     title: article.title,
     excerpt: article.excerpt || "",
+    status: article.status,
     category: article.category,
     tags: article.tags,
     viewCount: article.views,

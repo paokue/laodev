@@ -12,6 +12,7 @@ import {
   X,
   Calendar,
   DollarSign,
+  BookOpen,
 } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
@@ -25,6 +26,7 @@ const sidebarLinks = [
   { href: "/admin/developers", label: "Developers", icon: UserCheck },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/posts", label: "Posts", icon: FileText },
+  { href: "/admin/knowledge", label: "Knowledge", icon: BookOpen },
   { href: "/admin/bookings", label: "Bookings", icon: Calendar },
   { href: "/admin/payments", label: "Payments", icon: DollarSign },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
@@ -75,7 +77,7 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 space-y-3 p-4">
           {sidebarLinks.map((link) => {
             const isActive = location.pathname === link.href
             return (
@@ -90,7 +92,7 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
                     : "text-white hover:bg-secondary hover:text-white"
                 )}
               >
-                <link.icon className="h-5 w-5" />
+                <link.icon className="h-4 w-4" />
                 {link.label}
               </Link>
             )

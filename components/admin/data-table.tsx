@@ -42,6 +42,7 @@ export interface Column<T> {
 export interface FilterOption {
   key: string
   label: string
+  type?: "select" | "dateRange"
   options: { value: string; label: string }[]
 }
 
@@ -248,32 +249,63 @@ export function DataTable<T extends { id: string }>({
       {showFilters && filters.length > 0 && (
         <Card className="rounded-sm">
           <CardContent className="px-4 py-0">
-            <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               {filters.map((filter) => (
-                <div key={filter.key}>
-                  <label className="mb-2 block text-sm font-medium">{filter.label}</label>
-                  <Select
-                    value={filterValues[filter.key] || "all"}
-                    onValueChange={(value) => {
-                      const newFilters = { ...filterValues, [filter.key]: value }
-                      setFilterValues(newFilters)
-                      setCurrentPage(1)
-                      notifyChange({ filters: newFilters, page: 1 })
-                    }}
-                  >
-                    <SelectTrigger className="w-full border border-white/50">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      {filter.options.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                filter.type === "dateRange" ? (
+                  <div key={filter.key} className="col-span-2 lg:col-span-2">
+                    <label className="mb-2 block text-sm font-medium">{filter.label}</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="date"
+                        className="h-9 text-sm flex-1"
+                        value={filterValues[`${filter.key}From`] || ""}
+                        onChange={(e) => {
+                          const newFilters = { ...filterValues, [`${filter.key}From`]: e.target.value }
+                          setFilterValues(newFilters)
+                          setCurrentPage(1)
+                          notifyChange({ filters: newFilters, page: 1 })
+                        }}
+                      />
+                      <span className="text-sm text-white">to</span>
+                      <Input
+                        type="date"
+                        className="h-9 text-sm flex-1"
+                        value={filterValues[`${filter.key}To`] || ""}
+                        onChange={(e) => {
+                          const newFilters = { ...filterValues, [`${filter.key}To`]: e.target.value }
+                          setFilterValues(newFilters)
+                          setCurrentPage(1)
+                          notifyChange({ filters: newFilters, page: 1 })
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div key={filter.key}>
+                    <label className="mb-2 block text-sm font-medium">{filter.label}</label>
+                    <Select
+                      value={filterValues[filter.key] || "all"}
+                      onValueChange={(value) => {
+                        const newFilters = { ...filterValues, [filter.key]: value }
+                        setFilterValues(newFilters)
+                        setCurrentPage(1)
+                        notifyChange({ filters: newFilters, page: 1 })
+                      }}
+                    >
+                      <SelectTrigger className="w-full border border-white/50">
+                        <SelectValue placeholder="All" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        {filter.options.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )
               ))}
             </div>
           </CardContent>

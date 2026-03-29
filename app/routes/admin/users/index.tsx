@@ -397,7 +397,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+        <h1 className="text-lg sm:text-3xl font-bold tracking-tight">Users</h1>
         <p className="text-white">Manage all registered users</p>
       </div>
 

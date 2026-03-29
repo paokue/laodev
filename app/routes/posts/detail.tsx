@@ -38,6 +38,7 @@ import {
   User,
   Calendar,
   MapPin,
+  Flag,
 } from "lucide-react"
 
 function timeAgo(date: Date): string {
@@ -80,6 +81,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   })
 
   if (dbPost) {
+    // Block hidden posts
+    if (dbPost.status === "hidden") {
+      throw new Response("Post not found", { status: 404 })
+    }
+
     // Increment view count
     await prisma.post.update({
       where: { id: postId },
@@ -102,7 +108,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         skills: dbPost.tags,
         responses: dbPost.comments.length,
         views: dbPost.views + 1,
-        status: "active",
+        status: dbPost.status || "published",
         createdAt: timeAgo(dbPost.createdAt),
         type: dbPost.type || "project",
       },
@@ -126,7 +132,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
         ? !!(await prisma.savedPost.findUnique({ where: { postId_userId: { postId, userId: currentUser.userId } } }))
         : false,
       similarPosts: await prisma.post.findMany({
-        where: { id: { not: postId } },
+        where: { id: { not: postId }, status: { not: "hidden" } },
         take: 3,
         orderBy: { createdAt: "desc" },
         include: { _count: { select: { comments: true } } },
@@ -646,6 +652,13 @@ export default function PostDetailPage() {
                     {post.status}
                   </Badge>
                 </div>
+
+                {post.status === "flagged" && (
+                  <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                    <Flag className="h-4 w-4 shrink-0" />
+                    <p>This post has been flagged for potentially violating community guidelines. Content may be inappropriate or contain spam.</p>
+                  </div>
+                )}
 
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl text-balance">
                   {post.title}

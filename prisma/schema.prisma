@@ -135,6 +135,7 @@ model Post {
   type      String   @default("project")
   budget    String?
   tags      String[]
+  status    String   @default("published")
   views     Int      @default(0)
   likes     Int      @default(0)
   comments  Comment[]

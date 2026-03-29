@@ -51,6 +51,7 @@ function timeAgo(date: Date): string {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const dbPosts = await prisma.post.findMany({
+    where: { status: { not: "hidden" } },
     orderBy: { createdAt: "desc" },
     include: {
       author: { select: { name: true } },
@@ -68,9 +69,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     responses: post._count.comments,
     createdAt: timeAgo(post.createdAt),
     type: post.type || "project",
+    status: post.status || "published",
   }))
 
-  const totalPosts = await prisma.post.count()
+  const totalPosts = await prisma.post.count({ where: { status: { not: "hidden" } } })
   const totalComments = await prisma.comment.count()
 
   return { posts, totalPosts, totalComments }

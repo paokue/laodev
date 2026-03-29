@@ -26,6 +26,7 @@ import {
   Sparkles,
   Send,
   Reply,
+  Flag,
 } from "lucide-react"
 
 function timeAgo(date: Date): string {
@@ -55,6 +56,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       content: true,
       category: true,
       tags: true,
+      status: true,
       views: true,
       likes: true,
       coffeeCount: true,
@@ -78,7 +80,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     },
   })
 
-  if (!article) {
+  if (!article || article.status === "hidden") {
     throw new Response("Article not found", { status: 404 })
   }
 
@@ -415,6 +417,13 @@ export default function KnowledgeDetailPage({ loaderData, actionData }: Route.Co
                 <span>{article.viewCount} views</span>
               </div>
             </div>
+
+            {article.status === "flagged" && (
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                <Flag className="h-4 w-4 shrink-0" />
+                <p>This article has been flagged for potentially violating community guidelines. Content may be inappropriate or contain spam.</p>
+              </div>
+            )}
 
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
               {article.title}
