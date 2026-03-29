@@ -371,3 +371,13 @@ model Withdrawal {
 
   @@map("withdrawals")
 }
+
+model Setting {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  key   String @unique
+  value String
+  type  String @default("string")
+  group String
+
+  @@map("settings")
+}

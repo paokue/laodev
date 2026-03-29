@@ -60,6 +60,6 @@ export default [
     route("/admin/bookings", "routes/admin/bookings/index.tsx"),
     route("/admin/payments", "routes/admin/payments/index.tsx"),
     route("/admin/messages", "routes/admin/messages.tsx"),
-    route("/admin/settings", "routes/admin/settings.tsx"),
+    route("/admin/settings", "routes/admin/settings/index.tsx"),
   ]),
 ] satisfies RouteConfig;
