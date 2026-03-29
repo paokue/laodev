@@ -52,8 +52,9 @@ export default [
   // Admin routes (with layout — protected by admin session)
   layout("routes/admin/layout.tsx", [
     route("/admin", "routes/admin/dashboard.tsx"),
-    route("/admin/developers", "routes/admin/developers.tsx"),
-    route("/admin/users", "routes/admin/users.tsx"),
+    route("/admin/developers", "routes/admin/developers/index.tsx"),
+    route("/admin/developers/:id", "routes/admin/developers/detail.tsx"),
+    route("/admin/users", "routes/admin/users/index.tsx"),
     route("/admin/posts", "routes/admin/posts.tsx"),
     route("/admin/bookings", "routes/admin/bookings.tsx"),
     route("/admin/payments", "routes/admin/payments.tsx"),

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import {
   Table,
   TableBody,
@@ -45,6 +45,13 @@ export interface FilterOption {
   options: { value: string; label: string }[]
 }
 
+export interface ServerParams {
+  search: string
+  filters: Record<string, string>
+  page: number
+  sort: { key: string; direction: "asc" | "desc" } | null
+}
+
 interface DataTableProps<T> {
   data: T[]
   columns: Column<T>[]
@@ -56,6 +63,14 @@ interface DataTableProps<T> {
   renderMobileCard?: (item: T, index: number) => React.ReactNode
   emptyMessage?: string
   actions?: (item: T) => React.ReactNode
+  // Server-side mode
+  serverSide?: boolean
+  totalItems?: number
+  onParamsChange?: (params: ServerParams) => void
+  initialSearch?: string
+  initialFilters?: Record<string, string>
+  initialPage?: number
+  initialSort?: { key: string; direction: "asc" | "desc" } | null
 }
 
 export function DataTable<T extends { id: string }>({
@@ -69,18 +84,53 @@ export function DataTable<T extends { id: string }>({
   renderMobileCard,
   emptyMessage = "No data found",
   actions,
+  serverSide = false,
+  totalItems,
+  onParamsChange,
+  initialSearch = "",
+  initialFilters = {},
+  initialPage = 1,
+  initialSort = null,
 }: DataTableProps<T>) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({})
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null)
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [currentPage, setCurrentPage] = useState(initialPage)
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(initialFilters)
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(initialSort)
   const [showFilters, setShowFilters] = useState(false)
 
-  // Filter and search data
+  // Sync state from URL when loader re-runs in server-side mode
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    if (serverSide) {
+      setSearchQuery(initialSearch)
+      setFilterValues(initialFilters)
+      setCurrentPage(initialPage)
+      setSortConfig(initialSort)
+    }
+  }, [serverSide, initialSearch, initialPage, JSON.stringify(initialFilters), JSON.stringify(initialSort)])
+
+  // Notify parent of param changes in server-side mode
+  const notifyChange = (overrides: Partial<ServerParams>) => {
+    if (serverSide && onParamsChange) {
+      onParamsChange({
+        search: overrides.search ?? searchQuery,
+        filters: overrides.filters ?? filterValues,
+        page: overrides.page ?? currentPage,
+        sort: overrides.sort !== undefined ? overrides.sort : sortConfig,
+      })
+    }
+  }
+
+  // Filter and search data (client-side only)
   const filteredData = useMemo(() => {
+    if (serverSide) return data
+
     let result = [...data]
 
-    // Apply search
     if (searchQuery && searchKey) {
       const query = searchQuery.toLowerCase()
       result = result.filter((item) => {
@@ -92,7 +142,6 @@ export function DataTable<T extends { id: string }>({
       })
     }
 
-    // Apply filters
     Object.entries(filterValues).forEach(([key, value]) => {
       if (value && value !== "all") {
         result = result.filter((item) => {
@@ -102,7 +151,6 @@ export function DataTable<T extends { id: string }>({
       }
     })
 
-    // Apply sorting
     if (sortConfig) {
       result.sort((a, b) => {
         const aValue = (a as Record<string, unknown>)[sortConfig.key]
@@ -121,19 +169,25 @@ export function DataTable<T extends { id: string }>({
     }
 
     return result
-  }, [data, searchQuery, searchKey, filterValues, sortConfig])
+  }, [data, searchQuery, searchKey, filterValues, sortConfig, serverSide])
 
   // Pagination
-  const totalPages = Math.ceil(filteredData.length / pageSize)
+  const itemCount = serverSide ? (totalItems ?? data.length) : filteredData.length
+  const totalPages = Math.ceil(itemCount / pageSize)
   const startIndex = (currentPage - 1) * pageSize
-  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize)
+  const paginatedData = serverSide ? data : filteredData.slice(startIndex, startIndex + pageSize)
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => {
+      let next: { key: string; direction: "asc" | "desc" } | null
       if (prev?.key === key) {
-        return prev.direction === "asc" ? { key, direction: "desc" } : null
+        next = prev.direction === "asc" ? { key, direction: "desc" } : null
+      } else {
+        next = { key, direction: "asc" }
       }
-      return { key, direction: "asc" }
+      notifyChange({ sort: next, page: 1 })
+      setCurrentPage(1)
+      return next
     })
   }
 
@@ -141,6 +195,7 @@ export function DataTable<T extends { id: string }>({
     setFilterValues({})
     setSearchQuery("")
     setCurrentPage(1)
+    notifyChange({ search: "", filters: {}, page: 1, sort: sortConfig })
   }
 
   const hasActiveFilters = searchQuery || Object.values(filterValues).some((v) => v && v !== "all")
@@ -148,15 +203,16 @@ export function DataTable<T extends { id: string }>({
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-row gap-4 sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
+          <Search className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
           <Input
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value)
               setCurrentPage(1)
+              notifyChange({ search: e.target.value, page: 1 })
             }}
             className="pl-9"
           />
@@ -168,9 +224,9 @@ export function DataTable<T extends { id: string }>({
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className={cn(showFilters && "bg-secondary")}
+              className={cn(showFilters && "bg-secondary border border-primary")}
             >
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              <SlidersHorizontal className="h-4 w-4" />
               Filters
               {hasActiveFilters && (
                 <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
@@ -180,8 +236,8 @@ export function DataTable<T extends { id: string }>({
             </Button>
           )}
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <X className="mr-1 h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="border border-rose-500 hover:bg-rose-500 hover:text-white">
+              <X className="h-4 w-4" />
               Clear
             </Button>
           )}
@@ -190,20 +246,22 @@ export function DataTable<T extends { id: string }>({
 
       {/* Filter Options */}
       {showFilters && filters.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-sm">
+          <CardContent className="px-4 py-0">
+            <div className="grid gap-4 grid-cols-3 sm:grid-cols-2 lg:grid-cols-4">
               {filters.map((filter) => (
                 <div key={filter.key}>
                   <label className="mb-2 block text-sm font-medium">{filter.label}</label>
                   <Select
                     value={filterValues[filter.key] || "all"}
                     onValueChange={(value) => {
-                      setFilterValues((prev) => ({ ...prev, [filter.key]: value }))
+                      const newFilters = { ...filterValues, [filter.key]: value }
+                      setFilterValues(newFilters)
                       setCurrentPage(1)
+                      notifyChange({ filters: newFilters, page: 1 })
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full border border-white/50">
                       <SelectValue placeholder="All" />
                     </SelectTrigger>
                     <SelectContent>
@@ -224,7 +282,7 @@ export function DataTable<T extends { id: string }>({
 
       {/* Results count */}
       <div className="text-sm text-white">
-        Showing {startIndex + 1}-{Math.min(startIndex + pageSize, filteredData.length)} of {filteredData.length} results
+        Showing {itemCount === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + pageSize, itemCount)} of {itemCount} results
       </div>
 
       {/* Desktop Table View */}
@@ -363,7 +421,7 @@ export function DataTable<T extends { id: string }>({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage(1)}
+              onClick={() => { setCurrentPage(1); notifyChange({ page: 1 }) }}
               disabled={currentPage === 1}
             >
               <ChevronsLeft className="h-4 w-4" />
@@ -371,7 +429,7 @@ export function DataTable<T extends { id: string }>({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => { const p = Math.max(1, currentPage - 1); setCurrentPage(p); notifyChange({ page: p }) }}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -395,7 +453,7 @@ export function DataTable<T extends { id: string }>({
                     key={pageNum}
                     variant={currentPage === pageNum ? "default" : "outline"}
                     size="icon"
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => { setCurrentPage(pageNum); notifyChange({ page: pageNum }) }}
                     className="h-9 w-9"
                   >
                     {pageNum}
@@ -407,7 +465,7 @@ export function DataTable<T extends { id: string }>({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => { const p = Math.min(totalPages, currentPage + 1); setCurrentPage(p); notifyChange({ page: p }) }}
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />
@@ -415,7 +473,7 @@ export function DataTable<T extends { id: string }>({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage(totalPages)}
+              onClick={() => { setCurrentPage(totalPages); notifyChange({ page: totalPages }) }}
               disabled={currentPage === totalPages}
             >
               <ChevronsRight className="h-4 w-4" />

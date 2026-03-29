@@ -145,6 +145,20 @@ export default function AdminLoginPage() {
             </Button>
           </Form>
 
+          {/* Dev credentials */}
+          {process.env.NODE_ENV !== "production" && (
+            <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-1">
+              <p className="text-xs font-medium text-amber-500 flex items-center gap-1.5">
+                <Shield className="h-3 w-3" />
+                Dev Credentials
+              </p>
+              <div className="text-xs text-white space-y-0.5">
+                <p>Email: <span className="font-mono text-amber-400">admin@laodev.la</span></p>
+                <p>Password: <span className="font-mono text-amber-400">admin123</span></p>
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 text-center">
             <Link to="/" className="text-xs text-white hover:text-primary transition-colors">
               Back to LaoDev

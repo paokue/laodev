@@ -37,6 +37,7 @@ enum DeveloperStatus {
   APPROVED
   REJECTED
   ACTIVE
+  SUSPENDED
 }
 
 model User {
