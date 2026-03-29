@@ -57,7 +57,7 @@ export default [
     route("/admin/users", "routes/admin/users/index.tsx"),
     route("/admin/posts", "routes/admin/posts/index.tsx"),
     route("/admin/knowledge", "routes/admin/knowledge/index.tsx"),
-    route("/admin/bookings", "routes/admin/bookings.tsx"),
+    route("/admin/bookings", "routes/admin/bookings/index.tsx"),
     route("/admin/payments", "routes/admin/payments/index.tsx"),
     route("/admin/messages", "routes/admin/messages.tsx"),
     route("/admin/settings", "routes/admin/settings.tsx"),

@@ -204,7 +204,7 @@ export function DataTable<T extends { id: string }>({
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="flex flex-row gap-4 sm:items-center sm:justify-between">
+      <div className="flex flex-row gap-4 items-center justify-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 mt-1 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
           <Input
